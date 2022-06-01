@@ -1,0 +1,117 @@
+
+
+
+.form-control {padding:1rem .75rem .125rem;}
+.form-control:focus {box-shadow:none;}
+.form-control ~ label {position:absolute;pointer-events: none;left:.75rem;top:.75rem;transition:top .5s;}
+.form-control.has-value ~ label,
+.form-control:focus ~ label {font-size:.8rem;top:0;}
+label.btn {box-shadow:none!important;}
+
+.btn-close:focus {
+    box-shadow: none;
+}
+.btn-dark {
+    color: #fff;
+    background-color: #3f3f3f;
+    border-color: #3f3f3f;
+}
+
+
+select.selectpicker + .dropdown-toggle {
+	padding: 1rem .75rem .125rem;
+	background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+	box-shadow: none;
+	outline: none;
+}
+.bootstrap-select .dropdown-toggle:focus, .bootstrap-select>select.mobile-device:focus+.dropdown-toggle {
+	box-shadow: none;
+	outline: none!important;
+}
+.bootstrap-select .dropdown-toggle .filter-option-inner-inner {
+    max-width: 375px;
+}
+/*
+.dropdown-toggle:not(.show) .filter-option-inner-inner {color:transparent;}
+*/
+.bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn) {width: 100%;margin-bottom: .75rem;}
+.bootstrap-select.form-control:not(.has-value) .filter-option-inner-inner {color:transparent;}
+
+.input-field,
+.btn-group {position:relative;margin-bottom:1rem;}
+.input-field:first-child {margin-top:1rem;}
+.input-field .error {display:none;color:#dc3545;}
+.input-field .error.show {display:block;}
+fieldset legend {font-size: 1rem;}
+
+.table tr.transparent-border {border:transparent;}
+.table td.oximeter {min-width: 45px;}
+
+.accordion-toggle > svg {transition: transform .7s;}
+.accordion-toggle[aria-expanded="true"] > svg {transform: rotate(-180deg);}
+
+[data-bs-toggle="tooltip"] {width: max-content;}
+
+
+.table a {color: inherit;/* font-weight: bold;text-decoration: none; */}
+
+.navbar-brand > img {max-height:60px}
+
+.dropdown-menu[data-bs-popper] {
+    left: unset;
+    right:0;
+}
+
+.loading > svg {
+    display: none;
+    margin: auto;
+}
+
+.daterange, .daterange:focus {background:transparent;border: 1px solid #ccc;border-radius: .25rem;box-shadow:none;}
+
+.ui-slider-horizontal .ui-slider-handle {border-radius:50%;}
+.ui-slider-handle.ui-corner-all.ui-state-default:focus-visible {outline: none;}
+.ui-slider-handle.ui-corner-all.ui-state-default.ui-state-active {border: inherit;background: inherit;}
+
+
+.checkbox-container1 {height: 100%;display: flex;align-items: center;justify-content: center;flex-direction: column;}
+.checkbox span:before, .checkbox span:after {content: "";display: inline-block;background: #fff;width: 0;height: 0.2rem;position: absolute;transform-origin: 0% 0%;}
+.checkbox {position: relative;height: 2rem;display: flex;align-items: center;margin-bottom: .5rem;}
+.checkbox input {display: none;}
+.checkbox input:checked ~ span {background: #ccc;border-color: #ccc;}
+.checkbox input:checked ~ span:before {width: 1rem;height: 0.15rem;transition: width 0.1s;transition-delay: 0.3s;}
+.checkbox input:checked ~ span:after {width: 0.4rem;height: 0.15rem;transition: width 0.1s;transition-delay: 0.2s;}
+.checkbox input:disabled ~ span {background: #ececec;border-color: #dcdcdc;}
+.checkbox input:disabled ~ label {color: #dcdcdc;}.checkbox input:disabled ~ label:hover {cursor: default;}
+.checkbox label {padding-left: 2rem;position: relative;z-index: 2;cursor: pointer;margin-bottom:0;line-height: 1;}
+.checkbox span {display: inline-block;width: 1.2rem;height: 1.2rem;border: 2px solid #ccc;position: absolute;left: 0;transition: all 0.2s;z-index: 1;box-sizing: content-box;border-radius: .25rem;}
+.checkbox span:before {transform: rotate(-55deg);top: 1rem;left: 0.37rem;}
+.checkbox span:after {transform: rotate(35deg);bottom: 0.35rem;left: 0.2rem;}
+
+
+.btn-group .btn.radio-btn, .btn-group-vertical .btn.radio-btn {
+    border: 1px solid #3f3f3f;
+}
+form.delete .btn-group .btn.radio-btn, 
+form.delete .btn-group-vertical .btn.radio-btn {
+    cursor: default;
+}
+.btn-group .btn.radio-btn.active, .btn-group-vertical .btn.radio-btn.active {
+    color:#fff; background:#3f3f3f;
+}
+form.delete .btn-group .btn.radio-btn.active, 
+form.delete .btn-group-vertical .btn.radio-btn.active {
+    background-color: #6e7073;
+    border-color: #6e7073;
+  }
+.btn.focus, .btn:focus {box-shadow:none;}
+.btn-group .btn.radio-btn>input[type="radio"] {
+    position: absolute;
+    clip: rect(0,0,0,0);
+    pointer-events: none;
+}
+
+
+  
