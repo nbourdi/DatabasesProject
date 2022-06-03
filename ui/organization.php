@@ -48,6 +48,13 @@ if(isset($_POST['elementDetails'], $_POST['elementId']) && $_POST['elementDetail
 }
 
 
+if(isset($_POST['organization'], $_POST['abbreviation']) && in_array($_POST['organization'], ['uni','inst','co']) && $_POST['abbreviation'] != '') {
+    $type = $mysqli->real_escape_string($_POST['organization']);
+    budgetInput($type);
+    exit;
+}
+
+
 $conf->header('ΕΛΙΔΕΚ - Οργανισμοί');
 $conf->menu($active = basename(__FILE__, '.php'));
 
@@ -174,7 +181,7 @@ function form($type, $data = NULL) {
                 <label for="organization_name" class="form-label">Όνομα<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
-            <div class="btn-group btn-group-toggle ml-4" data-toggle="buttons">
+            <div class="btn-group btn-group-toggle organization-type ml-4" data-toggle="buttons">
                 <label class="<?php echo 'btn radio-btn'.(@$data['type']=='uni'?' active':''); ?>" for="organization_type_uni">
                     <input <?php echo @$data['type']=='uni'?'checked':''; ?> type="radio" name="organization[type]" id="organization_type_uni" value="uni"> Πανεπιστήμιο
                 </label>
@@ -184,7 +191,10 @@ function form($type, $data = NULL) {
                 <label class="<?php echo 'btn radio-btn'.(@$data['type']=='co'?' active':''); ?>" for="organization_type_co">
                     <input <?php echo @$data['type']=='co'?'checked':''; ?> type="radio" name="organization[type]" id="organization_type_co" value="co"> Εταιρία
                 </label>
-            </div>
+            </div> <?php
+            if(isset($data['type']) && !empty($data['type'])) {
+                budgetInput($data['type'],$data['budget']);
+            } ?>
             <div class="input-field">
                 <input type="text" class="form-control" id="organization_street" name="organization[street]" value="<?php echo $data['street'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
                 <label for="organization_street" class="form-label">Οδός</label>
@@ -222,4 +232,38 @@ function form($type, $data = NULL) {
         <input type="hidden" name="db" value="<?php echo $type; ?>" />
         <input type="hidden" name="edit_id" value="<?php echo $data['organization_id'] ?? NULL; ?>" />
     </form>	<?php
+}
+
+function budgetInput($type,$budget = NULL) {
+    $budget = $budget?json_decode($budget,true):NULL;
+    //echo '<pre>';print_r($budget);echo '</pre>';
+    switch ($type) {
+        case 'uni': ?>
+            <div class="input-field">
+                <input type="text" class="form-control organization-budget" id="organization_uni_budget_ministry" name="organization[budget_ministry]" required value="<?php echo $budget['ministry_budget']??''; ?>" <?php echo $read_only[$type]??''; ?> >
+                <label for="organization_uni_budget_ministry" class="form-label">Προϋπολογισμός Υπ. Παιδείας<span class="text-danger">&nbsp;*</span></label>
+                <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+            </div> <?php
+            break;
+        case 'inst': ?>
+            <div class="input-field">
+                <input type="text" class="form-control organization-budget" id="organization_inst_budget_ministry" name="organization[budget_ministry]" required value="<?php echo $budget['ministry_budget'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
+                <label for="organization_inst_budget_ministry" class="form-label">Προϋπολογισμός Υπ. Παιδείας<span class="text-danger">&nbsp;*</span></label>
+                <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+            </div>
+            <div class="input-field">
+                <input type="text" class="form-control organization-budget" id="organization_inst_budget_private" name="organization[budget_private]" required value="<?php echo $budget['private_budget'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
+                <label for="organization_inst_budget_private" class="form-label">Προϋπολογισμός ιδιωτικών δράσεων<span class="text-danger">&nbsp;*</span></label>
+                <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+            </div> <?php
+            break;
+        case 'co': ?>
+            <div class="input-field">
+                <input type="text" class="form-control organization-budget" id="organization_co_budget_capital" name="organization[budget_capital]" required value="<?php echo $budget['capital'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
+                <label for="organization_co_budget_capital" class="form-label">Ίδια κεφάλαια<span class="text-danger">&nbsp;*</span></label>
+                <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+            </div> <?php
+            break;
+    
+    }
 }

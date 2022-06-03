@@ -6,15 +6,14 @@ $mysqli = $conf->mysqli;
 
 
 // DISPLAY FORM FOR INSERT, UPDATE & DELETE
-if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'program' && in_array($_POST['type'],['insert','update','delete'])) {
-	//echo '<pre>';print_r($_POST);echo '</pre>';
-    $type = $mysqli->real_escape_string($_POST['type']);
+if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'executive' && in_array($_POST['type'],['insert','update','delete'])) {
+	$type = $mysqli->real_escape_string($_POST['type']);
 	$data = [];
 	if(isset($_POST['edit_id']) && is_numeric($_POST['edit_id'])) {
 		$edit_id = $mysqli->real_escape_string($_POST['edit_id']);
-		$query = "	SELECT `program_id`, `title`, `department`
-                    FROM `program`
-					WHERE `program_id` = '$edit_id' ";
+		$query = "SELECT `executive_id`, `first_name`, `last_name`
+                    FROM `executive`
+                    WHERE `executive_id` = '$edit_id'  ";
 		//echo $query; exit;
 		$result = $mysqli->query($query);
 		if ($result->num_rows > 0) {
@@ -28,16 +27,16 @@ if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'program' && in_ar
 
 // INSERT OR UPDATE OR DELETE TO DB
 if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) {
-	//echo '<pre>';print_r($_POST);echo '</pre>';//exit;
+	//echo '<pre>';print_r($_POST['researcher']);echo '</pre>';//exit;
 	$action = $mysqli->real_escape_string($_POST['db']);
-	$query = '';
+	$query = "";
 	$edit_id = 0;
-	if($action == 'insert' && isset($_POST['program']) && is_array($_POST['program'])) {
+	if($action == 'insert' && isset($_POST['executive']) && is_array($_POST['executive'])) {
 		$columns = [];
 		$values = [];
-		foreach($_POST['program'] as $column => $value) {
+		foreach($_POST['executive'] as $column => $value) {
 			$column = $mysqli->real_escape_string($column);
-			if(in_array($column, ['title','department'])) {
+			if(in_array($column, ['first_name','last_name'])) {
 				$columns[] = "`$column`";
                 if($conf->isDate($value))
                     $value = $conf->dateToDb($value);
@@ -45,16 +44,17 @@ if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) 
 				$values[] = "'$value'";
 			}
 		}
+        //echo '<pre>';print_r($columns);print_r($values);echo '</pre>';exit;
 		$columns = implode(',',$columns);
 		$values = implode(',',$values);
-		$query = "INSERT INTO `program` ($columns) VALUES ($values);";
+		$query = "INSERT INTO `executive` ($columns) VALUES ($values);";
 	}
-	else if($action == 'update' && isset($_POST['edit_id'], $_POST['program']) && $_POST['edit_id'] && is_array($_POST['program'])) {
+	else if($action == 'update' && isset($_POST['edit_id'], $_POST['executive']) && $_POST['edit_id'] && is_array($_POST['executive'])) {
 		$edit_id = $mysqli->real_escape_string($_POST['edit_id']);
 		$fields = [];
-		foreach($_POST['program'] as $column => $value) {
+		foreach($_POST['executive'] as $column => $value) {
 			$column = $mysqli->real_escape_string($column);
-			if(in_array($column, ['title','department'])) {
+			if(in_array($column, ['first_name','last_name'])) {
                 if($conf->isDate($value))
                     $value = $conf->dateToDb($value);
 				$value = $mysqli->real_escape_string($value);
@@ -62,17 +62,17 @@ if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) 
 			}
 		}
 		$fields = implode(',',$fields);
-		$query = "	UPDATE `program`
-                    SET $fields
-                    WHERE `program_id` = $edit_id ";
+		$query = "	UPDATE `executive`
+			SET $fields
+			WHERE `executive_id` = $edit_id ";
 	}
 	else if($action == 'delete' && isset($_POST['edit_id']) && $_POST['edit_id']) {
 		$edit_id = $mysqli->real_escape_string($_POST['edit_id']);
 		$fields = [];
-		$query = "	DELETE FROM `program`
-					WHERE `program_id` = $edit_id ";
+		$query = "	DELETE FROM `executive`
+					WHERE `executive_id` = $edit_id ";
 	}
-	//echo '###'.$query;exit;
+	//echo '###<br>'.$query;exit;
 	if($mysqli->query($query))
 		echo json_encode(['status'=>'success', 'action'=>$action, 'edit_id'=>$edit_id ? $edit_id : $mysqli->insert_id ]);
 	else
@@ -82,15 +82,15 @@ if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) 
 }
 
 // UPDATE LIST AFTER INSERT, UPDATE & DELETE
-if(isset($_POST['list'], $_POST['type']) && $_POST['list'] == 'program' && in_array($_POST['type'],['insert','update','delete'])) {
+if(isset($_POST['list'], $_POST['type']) && $_POST['list'] == 'executive' && in_array($_POST['type'],['insert','update','delete'])) {
     //echo '<pre>';print_r($_POST);echo '</pre>';//exit;
     $type = $mysqli->real_escape_string($_POST['type']);
 	$data = [];
 	if(isset($_POST['edit_id']) && is_numeric($_POST['edit_id'])) {
 		$edit_id = $mysqli->real_escape_string($_POST['edit_id']);
-		$query = "	SELECT `program_id`, `title`, `department`
-                    FROM `program`
-					WHERE `program_id` = '$edit_id' ";
+		$query = "	SELECT `executive_id`, `first_name`, `last_name`
+                    FROM `executive`
+                    WHERE `executive_id` = '$edit_id'  ";
 		//echo $query; exit;
 		$result = $mysqli->query($query);
 		if ($result->num_rows > 0) {
@@ -103,27 +103,26 @@ if(isset($_POST['list'], $_POST['type']) && $_POST['list'] == 'program' && in_ar
 
 
 
-$conf->header('ΕΛΙΔΕΚ - Προγράμματα');
+$conf->header('ΕΛΙΔΕΚ - Ερευνητές');
 $conf->menu($active = basename(__FILE__, '.php'));
 
-$query = "  SELECT `program_id`, `title`, `department`
-            FROM `program`; ";
+$query = "SELECT `executive_id`, `first_name`, `last_name`
+            FROM `executive`";
 $result = $mysqli->query($query);
 $data = [];
 if ($result->num_rows > 0) {
   // output data of each row
   while($row = $result->fetch_assoc()) {
-    $key = $row['program_id'];
-    unset($row['program_id']);
+    $key = $row['executive_id'];
+    unset($row['executive_id']);
     $data[$key] = $row;
   }
 }
 
 ?>
     <div class="container mt-5">
-        <h1>Προγράμματα</h1>
-        <p>Προγράμματα που υλοποιούνται από το ΕΛ.ΙΔ.Ε.Κ. και χορηγούν χρηματοδοτήσεις στα έργα.
-            Το κάθε έργο λαμβάνει χρηματοδότηση από ένα πρόγραμμα. Το κάθε πρόγραμμα ανήκει σε μια διεύθυνση του ΕΛ.ΙΔ.Ε.Κ..</p>
+        <h1>Στελέχη</h1>
+        <p></p>
     </div>
 
 <?php
@@ -137,12 +136,12 @@ if ($result->num_rows > 0) {
         <table class='table table-striped'>
             <thead>
             <tr>
+                <th>Επώνυμο</th>
                 <th>Όνομα</th>
-                <th>Διεύθυνση</th>
                 <th></th>
                 <th colspan="1">
-                    <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="Προσθήκη προγράμματος" 
-                        data-content='{"form":"program","type":"insert"}'> 
+                    <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="Προσθήκη στελέχους" 
+                        data-content='{"form":"executive","type":"insert"}'> 
                         <?php echo $icon->add; ?>
                     </a>
                 </th>
@@ -162,18 +161,18 @@ $conf->footer();
 function listItem($key, $row) {
     global $icon; ?>
     <tr>
-        <td><?php echo $row['title']; ?></td>
-        <td><?php echo $row['department']; ?></td>
+        <td><?php echo $row['last_name']; ?></td>
+        <td><?php echo $row['first_name']; ?></td>
         <td>
-            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Επεξεργασία προγράμματος (id: '.$key.')'; ?>" 
-                data-content='{"form":"program","type":"update","edit_id":"<?php echo $key; ?>"}' data-success="Η προσθήκη του προγράμματος ολοκληρώθηκε."
+            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Επεξεργασία στελέχους (id: '.$key.')'; ?>" 
+                data-content='{"form":"executive","type":"update","edit_id":"<?php echo $key; ?>"}' data-success="Η προσθήκη του στελέχους ολοκληρώθηκε."
                 data-failure="Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά." class="">
                 <?php echo $icon->edit; ?>
             </a>
         </td>
         <td>
-            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Διαγραφή προγράμματος (id: '.$key.')'; ?>" 
-                data-content='{"form":"program","type":"delete","edit_id":"<?php echo $key; ?>"}'>
+            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Διαγραφή στελέχους (id: '.$key.')'; ?>" 
+                data-content='{"form":"executive","type":"delete","edit_id":"<?php echo $key; ?>"}'>
                 <?php echo $icon->delete; ?>
             </a>
         </td> 
@@ -186,29 +185,22 @@ function form($type, $data = NULL) {
     $save_btn_disabled = ['insert'=>'disabled', 'update'=>'disabled'];
     $message = ['delete' => 'Να γίνει οριστική διαγραφή της εγγραφής;'];
     $success = ['insert'=>'Η προσθήκη των στοιχείων ολοκληρώθηκε.', 'update'=>'Η ενημέρωση των στοιχείων ολοκληρώθηκε.', 'delete'=>'Η διαγραφή ολοκληρώθηκε.'];
-    $failure = ['insert'=>'Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά.', 'update'=>'Η ενημέρωση των στοιχείων απέτυχε, παρακαλώ δοκιμάστε ξανά.', 'delete'=>'Η διαγραφή απέτυχε, παρακαλώ δοκιμάστε ξανά.'];
+    $failure = ['insert'=>'Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά.', 'update'=>'Η ενημέρωση των στοιχείων απέτυχε, παρακαλώ δοκιμάστε ξανά.', 'delete'=>'Η διαγραφή απέτυχε, αποδεσμέυστε το στέλεχος από διαχειριστικές υποχρεώσεις και δοκιμάστε ξανά.'];
     $read_only = ['delete'=>'disabled'];
-    $query = "SELECT `abbreviation`,`name` FROM `organization` ";
-    $result = $mysqli->query($query);
-    $organization = [];
-    if ($result->num_rows > 0) {
-        // output data of each row
-        while($row = $result->fetch_assoc()) {
-            $organization[$row['abbreviation']] = $row['name'];
-        }
-    } ?>
-    <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" class="<?php echo $type; ?>" method="POST" data-item="program">
+ ?>
+    <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" class="<?php echo $type; ?>" method="POST" data-item="executive">
         <div class="container d-flex flex-column">
             <div class="input-field">
-                <input type="text" class="form-control" id="program_title" name="program[title]" required value="<?php echo $data['title'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
-                <label for="program_title" class="form-label">Τίτλος<span class="text-danger">&nbsp;*</span></label>
+                <input type="text" class="form-control" id="executive_firstname" name="executive[first_name]" required value="<?php echo $data['first_name'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
+                <label for="executive_firstname" class="form-label">Όνομα<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field">
-                <input type="text" class="form-control" id="program_department" name="program[department]" required value="<?php echo $data['department'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
-                <label for="program_department" class="form-label">Διεύθυνση<span class="text-danger">&nbsp;*</span></label>
+                <input type="text" class="form-control" id="executive_lastname" name="executive[last_name]" required value="<?php echo $data['last_name'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
+                <label for="executive_lastname" class="form-label">Επώνυμο<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
+
             <?php
             if(isset($message[$type])) { ?>
                 <p>	<?php
@@ -223,6 +215,6 @@ function form($type, $data = NULL) {
             </div>
         </div>
         <input type="hidden" name="db" value="<?php echo $type; ?>" />
-        <input type="hidden" name="edit_id" value="<?php echo $data['program_id'] ?? NULL; ?>" />
+        <input type="hidden" name="edit_id" value="<?php echo $data['executive_id'] ?? NULL; ?>" />
     </form>	<?php
 }

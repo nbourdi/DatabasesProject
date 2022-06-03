@@ -23,9 +23,6 @@ class Config {
 		  die("Connection failed: " . $mysqli->connect_error);
 		}
 		$this->mysqli = $mysqli;
-		if (session_status() === PHP_SESSION_NONE) {
-			session_start();
-		}
 	}
 	
 	public function __destruct() {
@@ -99,10 +96,11 @@ class Config {
                         <li><a class="dropdown-item" href="#">3.1 - Προγράμματα & έργα</a></li>
                         <li><a class="dropdown-item" href="#">3.2 - έργα ανά ερευνητή/???</a></li>
                         <li><a class="dropdown-item" href="#">3.3 - Ενδιαφέρον ερευνητικό πεδίο</a></li>
-                        <li><a class="dropdown-item" href="#">3.4 - οργανισμοί ίδιο αριθμό έργων</a></li>
-                        <li><a class="dropdown-item" href="#">3.5 - Κορυφαία διεπιστημονικά ζεύγη</a></li>
-                        <li><a class="dropdown-item" href="#">3.6 - Νέοι ερευνητές</a></li>
-                        <li><a class="dropdown-item" href="#">3.7 - Στελέχη - χρηματοδότηση</a></li>
+                        <li><a class="dropdown-item" href="3.4.php">3.4 - Πιο ενεργοί οργανισμοί</a></li>
+                        <li><a class="dropdown-item" href="3.5.php">3.5 - Κορυφαία διεπιστημονικά ζεύγη</a></li>
+                        <li><a class="dropdown-item" href="3.6.php">3.6 - Νέοι ερευνητές</a></li>
+                        <li><a class="dropdown-item" href="3.7.php">3.7 - Στελέχη - χρηματοδότηση</a></li>
+                        <li><a class="dropdown-item" href="3.8.php">3.8 - Ερευνητές σε έργα χωρίς παραδοτέα</a></li>
                     </ul>
                     </li>
                 </ul>

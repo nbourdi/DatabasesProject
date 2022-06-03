@@ -1,8 +1,10 @@
+-- ------------
+-- Query 3.8 --
+-- ------------
 
 use elidek;
--- query 3.8
 
-SELECT r.researcher_id, r.first_name, r.last_name, COUNT(*)
+SELECT r.researcher_id, r.first_name, r.last_name, COUNT(*) `count`
 FROM researcher r 
 INNER JOIN WorksOn w ON r.researcher_id = w.researcher_id
 inner join project p ON w.project_id = p.project_id 

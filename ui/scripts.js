@@ -2,55 +2,6 @@
 
 
 
-	//----------------------------- project filters -----------------------------
-
-
-	$('#project-filters').on('apply.daterangepicker', function(ev, picker) {
-        $(this).find('input.daterange').val(picker.startDate.format('DD/MM/YYYY')+' - '+picker.endDate.format('DD/MM/YYYY'));
-		$(this).find('input[name="filter[date][min]"]').val(picker.startDate.format('DD/MM/YYYY'));
-		$(this).find('input[name="filter[date][max]"]').val(picker.endDate.format('DD/MM/YYYY'));
-		postFilters($(this));
-	});
-    $('#project-filters').on('cancel.daterangepicker', function(ev, picker) {
-        $(this).find('input.daterange').val('');
-        $(this).find('input[name="filter[date][min]"]').val(picker.minDate.format('DD/MM/YYYY'));
-        $(this).find('input[name="filter[date][max]"]').val(picker.maxDate.format('DD/MM/YYYY'));
-		postFilters($(this));
-    });
-
-	$('#project-filters').on('change','input[type="checkbox"]',function(){
-		//checkboxFilter($(this).closest('.checkbox-container'));
-		if ($(this).is(':checked'))
-			$(this).val(1);
-		else
-			$(this).val(0);
-		postFilters($(this));
-	});
-	
-	function postFilters(element) {
-		var objForm = element.closest('form'),
-		uri = objForm.attr('action'),
-		postData = objForm.serialize();
-		$.ajax({
-			type:'POST',
-			url: uri,
-			data: postData,
-			cache: false,
-			success: function(data){
-				$('.filters-table').html(data);
-			},
-			beforeSend: function(){
-				$('.filters-table').empty();
-				$('.loading').show();
-				$("html, body").animate({ scrollTop: 0 }, "slow");
-			},
-			complete: function(){
-				$('.loading').hide();
-			}
-		});
-	}
-
-
 //----------------------------- dateTimePicker preferences -----------------------------
 
 var icons = {
@@ -133,79 +84,7 @@ $('input.daterange').each(function() {
 	  console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
 	});
 });
-/*
-	var date = moment().subtract(29, 'days');
 
-	function cb(ele) {
-		return function(date) {
-			var $object = $(ele).parent().find('input.form-control.calendar');
-			$object.html(date.format('DD/MM-YYYY') + 'T00:00:00Z');
-			$object.addClass('has-value');
-		}
-	}
-
-	$('input.form-control.calendar').parent().each(function() {
-		var object = $(this).find('input.form-control.calendar');
-			object.daterangepicker({
-				singleDatePicker: true,
-				autoApply: false,
-				autoUpdateInput: false,
-				locale: {
-					cancelLabel: 'Ακύρωση',
-					applyLabel: 'Εφαρμογή'
-				},
-				applyButtonClasses: 'btn apply',
-				cancelClass: 'btn cancel',
-				startDate: moment().subtract(30, 'Y').format('DD/MM/YYYY'),
-				minDate: moment().subtract(70, 'Y').format('DD/MM/YYYY'),
-				maxDate: moment().subtract(20, 'Y').format('DD/MM/YYYY')
-			}, cb(this));
-			$('.modal form .input-field').on('apply.daterangepicker', function(ev, picker) {
-				//object.val(picker.startDate.format('DD/MM/YYYY'));
-				object.addClass('has-value');
-			}, cb(this));
-			$('.modal form .input-field').on('cancel.daterangepicker', function(ev, picker) {
-				object.val('');
-				object.removeClass('has-value');
-			}, cb(this));
-	  })
-
- 
-
- 
-	$('body').on('focus', 'input.form-control.birthday', function (e) {
-		var object = $(this);
-		object.daterangepicker({
-			parentEl: object.parent(),
-			autoApply: false,
-			singleDatePicker: true,
-			autoUpdateInput: false,
-			//showDropdowns: true,
-			locale: {
-				cancelLabel: 'Ακύρωση',
-				applyLabel: 'Εφαρμογή'
-			},
-			applyButtonClasses: 'btn apply',
-			cancelClass: 'btn cancel',
-			startDate: moment().subtract(30, 'Y').format('DD/MM/YYYY'),
-			minDate: moment().subtract(70, 'Y').format('DD/MM/YYYY'),
-			maxDate: moment().subtract(20, 'Y').format('DD/MM/YYYY')
-		
-		});
- 		$('.modal form .input-field').on('apply.daterangepicker', function(ev, picker) {
-			object.val(picker.startDate.format('DD/MM/YYYY'));
-			object.addClass('has-value');
-			if($(this).closest('form').find('button[type=submit]').prop('disabled')) {
-				$(this).closest('form').find('button[type=submit]').prop('disabled', false);
-			}
-		});
-		$('.modal form .input-field').on('cancel.daterangepicker', function(ev, picker) {
-			object.val('');
-			object.removeClass('has-value');
-			//postFilters($(this));
-		}); 
-	});
-*/
 
 	//----------------------------- input range -----------------------------
     
@@ -400,8 +279,6 @@ $(document).ready(function(){
 	});
 
 
-
-
 	// FORM SUBMIT
 	$('body').on('click', 'button[type=submit]', function(e){
 		e.preventDefault();
@@ -499,3 +376,83 @@ $(document).ready(function(){
 
 
 });
+
+
+
+	//----------------------------- SCRIPTS FOR PAGES -----------------------------
+
+
+	//----------------------------- project filters -----------------------------
+
+	
+$(document).ready(function(){
+
+
+	$('#project-filters').on('apply.daterangepicker', function(ev, picker) {
+        $(this).find('input.daterange').val(picker.startDate.format('DD/MM/YYYY')+' - '+picker.endDate.format('DD/MM/YYYY'));
+		$(this).find('input[name="filter[date][min]"]').val(picker.startDate.format('DD/MM/YYYY'));
+		$(this).find('input[name="filter[date][max]"]').val(picker.endDate.format('DD/MM/YYYY'));
+		postFilters($(this));
+	});
+    $('#project-filters').on('cancel.daterangepicker', function(ev, picker) {
+        $(this).find('input.daterange').val('');
+        $(this).find('input[name="filter[date][min]"]').val(picker.minDate.format('DD/MM/YYYY'));
+        $(this).find('input[name="filter[date][max]"]').val(picker.maxDate.format('DD/MM/YYYY'));
+		postFilters($(this));
+    });
+
+	$('#project-filters').on('change','input[type="checkbox"]',function(){
+		//checkboxFilter($(this).closest('.checkbox-container'));
+		if ($(this).is(':checked'))
+			$(this).val(1);
+		else
+			$(this).val(0);
+		postFilters($(this));
+	});
+	
+	function postFilters(element) {
+		var objForm = element.closest('form'),
+		uri = objForm.attr('action'),
+		postData = objForm.serialize();
+		$.ajax({
+			type:'POST',
+			url: uri,
+			data: postData,
+			cache: false,
+			success: function(data){
+				$('.filters-table').html(data);
+			},
+			beforeSend: function(){
+				$('.filters-table').empty();
+				$('.loading').show();
+				$("html, body").animate({ scrollTop: 0 }, "slow");
+			},
+			complete: function(){
+				$('.loading').hide();
+			}
+		});
+	}
+});
+
+
+	//----------------------------- organization form -----------------------------
+
+	$(document).ready(function(){
+		$('body').on('click', '.organization-type label.radio-btn', function(e){
+			e.preventDefault();
+			var object = $(this).children('input[type="radio"][name="organization[type]"]:checked'),
+			form = object.closest('form'),
+			type = object.val();
+			form.find('.organization-budget').each(function() {
+				$(this).parent().remove();
+			});
+			var input = $.ajax({
+				url: form.attr('action'),
+				type: 'POST',
+				data: $.param({organization: type, abbreviation: 0}),
+				dataType: 'html',
+				async: false}).responseText;
+			//console.error(itemUpdate);
+			$(input).insertAfter(object.closest('.btn-group.btn-group-toggle.organization-type'));
+		});
+	});
