@@ -79,7 +79,6 @@ CREATE TABLE project ( -- inserted
     executive_id INT UNSIGNED NOT NULL,
     program_id INT UNSIGNED NOT NULL,
     CONSTRAINT check_amount CHECK (amount <= 1000000 AND amount >= 100000),
-    CONSTRAINT check_dates CHECK (start_date < end_date),
 	PRIMARY KEY (project_id),
     -- FOREIGN KEY CONSTRAINTS --
     CONSTRAINT fk_project_manager FOREIGN KEY (researcher_id)
@@ -150,8 +149,8 @@ CREATE TABLE WorksOn (
 CREATE TABLE evaluates (
 	project_id INT UNSIGNED NOT NULL UNIQUE,
     researcher_id INT UNSIGNED NOT NULL,
-    rating ENUM('A', 'B'),      -- we assume it must have recieved an A or a B to have been funded 
-    eval_date DATE,
+    rating ENUM('A', 'B') NOT NULL,      -- we assume it must have recieved an A or a B to have been funded 
+    eval_date DATE NOT NULL,
     PRIMARY KEY (project_id, researcher_id),
 	CONSTRAINT fk_evalutes_project FOREIGN KEY (project_id)
 		REFERENCES project (project_id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -197,8 +196,32 @@ JOIN `WorksOn`  `w`
 ON `p`.`project_id` = `w`.`project_id`
 GROUP BY `p`.`project_id`;
 
--- Elidek Database
--- Project Group 3
+
+-- --------------------
+-- --- TRIGGERS -------
+-- --------------------
+
+
+DELIMITER $$
+CREATE TRIGGER proj_duration_check_insert BEFORE INSERT ON project
+	FOR EACH ROW 
+	BEGIN
+    IF NOT(4 >= DATE_FORMAT(FROM_DAYS(DATEDIFF(new.end_date,new.start_date)), '%Y')+0 >= 1) THEN
+    SIGNAL SQLSTATE '45000';
+    END IF;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER proj_duration_check_update BEFORE UPDATE ON project
+	FOR EACH ROW 
+	BEGIN
+    IF NOT(4 >= DATE_FORMAT(FROM_DAYS(DATEDIFF(new.end_date,new.start_date)), '%Y')+0 >= 1) THEN
+    SIGNAL SQLSTATE '45000';
+    END IF;
+END$$
+DELIMITER ;
+
 -- Insertion of mock data
 
 --
