@@ -4,6 +4,16 @@ $conf = new Config;
 $icon = new Icon;
 $mysqli = $conf->mysqli;
 
+/* 
+SELECT concat(r.first_name,' ',r.last_name) AS manager, p.abbreviation, p.summary
+FROM project p
+INNER JOIN researcher r ON p.researcher_id = r.researcher_id;
+
+SELECT d.deliverable_id, d.summary FROM deliverable d
+INNER JOIN project p ON d.project_id = p.project_id
+WHERE p.project_id = $edit_id;
+ */
+
 // DISPLAY FORM FOR INSERT, UPDATE & DELETE
 if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'project' && in_array($_POST['type'],['insert','update','delete'])) {
 	$type = $mysqli->real_escape_string($_POST['type']);

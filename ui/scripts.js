@@ -434,6 +434,38 @@ $(document).ready(function(){
 	}
 });
 
+	//----------------------------- choose field filters -----------------------------
+
+	
+	$(document).ready(function(){
+
+		$('#choose-field-filters').on('click','label.radio-btn',function(){
+			var object = $(this).children('input[type=radio]'),
+			objForm = object.closest('form'),
+			uri = objForm.attr('action'),
+			field = 
+			$.ajax({
+				type:'POST',
+				url: uri,
+				data: $.param({filters: 'field', field_id: object.val()}),
+				cache: false,
+				success: function(data){
+					$('.filters-content').html(data);
+				},
+				beforeSend: function(){
+					$('.filters-content').empty();
+					$('.loading').show();
+					$("html, body").animate({ scrollTop: 0 }, "slow");
+				},
+				complete: function(){
+					$('.loading').hide();
+				}
+			});
+		});
+		
+	});
+	
+
 
 	//----------------------------- organization form -----------------------------
 
