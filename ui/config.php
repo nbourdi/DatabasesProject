@@ -12,7 +12,7 @@ class Config {
 		
 		$servername = "localhost";
 		$username = "root";
-		$password = "12345";
+		$password = "";
 
 		$database = "elidek";
 		// Create connection
@@ -85,6 +85,9 @@ class Config {
                     <li class="nav-item">
                         <a class="nav-link <?php echo $active == 'researcher'?'active':'';?>" href="researcher.php">Ερευνητές</a>
                     </li>
+					<li class="nav-item">
+                        <a class="nav-link <?php echo $active == 'executives'?'active':'';?>" href="executives.php">Στελέχη</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link <?php echo $active == 'organization'?'active':'';?>" href="organization.php">Οργανισμοί</a>
                     </li>
@@ -95,7 +98,7 @@ class Config {
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                         <li><a class="dropdown-item" href="#">3.1 - Προγράμματα & έργα</a></li>
                         <li><a class="dropdown-item" href="#">3.2 - έργα ανά ερευνητή/???</a></li>
-                        <li><a class="dropdown-item" href="#">3.3 - Ενδιαφέρον ερευνητικό πεδίο</a></li>
+                        <li><a class="dropdown-item" href="3.3.php">3.3 - Ενδιαφέρον ερευνητικό πεδίο</a></li>
                         <li><a class="dropdown-item" href="3.4.php">3.4 - Πιο ενεργοί οργανισμοί</a></li>
                         <li><a class="dropdown-item" href="3.5.php">3.5 - Κορυφαία διεπιστημονικά ζεύγη</a></li>
                         <li><a class="dropdown-item" href="3.6.php">3.6 - Νέοι ερευνητές</a></li>
