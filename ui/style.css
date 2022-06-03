@@ -107,7 +107,8 @@ form.delete .btn-group-vertical .btn.radio-btn.active {
     border-color: #6e7073;
   }
 .btn.focus, .btn:focus {box-shadow:none;}
-.btn-group .btn.radio-btn>input[type="radio"] {
+.btn-group .btn.radio-btn>input[type="radio"],
+.btn-group-vertical .btn.radio-btn>input[type="radio"] {
     position: absolute;
     clip: rect(0,0,0,0);
     pointer-events: none;
