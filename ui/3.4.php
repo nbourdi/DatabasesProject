@@ -55,8 +55,8 @@ if ($result->num_rows > 0) {
                 <th>Πλήθος έργων ετησίως</th>
                 <th>Έτη</th>
             </tr>
-            </thead>    <?php
-            
+            </thead>
+            <tbody>    <?php
             foreach ($data as $key => $row) {
                     listItem($key, $row);
             }   ?>
