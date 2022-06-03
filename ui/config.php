@@ -8,11 +8,10 @@ class Config {
 		ini_set('display_errors', '1');
 		ini_set('display_startup_errors', '1');
 		error_reporting(E_ALL);
-		
-		
-		$servername = "localhost";
-		$username = "root";
-		$password = "12345";
+		$this->config = $config = parse_ini_file("connection.ini");
+        $servername = $config['servername'];
+        $username = $config['username'];
+        $password = $config['password'];
 
 		$database = "elidek";
 		// Create connection
