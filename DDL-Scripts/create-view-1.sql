@@ -4,7 +4,7 @@
 -- ----------------------------------------
 
 use elidek;
--- not sure it's what we want.
+
 
 DROP VIEW IF EXISTS `projectresearcher_vw`;
 CREATE VIEW `projectresearcher_vw` AS

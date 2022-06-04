@@ -1,7 +1,8 @@
 -- ------------
 -- Query 3.7 --
 -- ------------
-use elidek; 
+
+USE elidek;
 
 SELECT * FROM (
 SELECT e.executive_id AS id, concat(e.first_name,' ',e.last_name) AS full_name, o.name, p.amount
@@ -12,5 +13,5 @@ WHERE o.type = 'co'
 ORDER BY p.amount DESC
 LIMIT 5
 ) `t` 
-GROUP BY `full_name`
+GROUP BY `id`
 ORDER BY amount DESC;
