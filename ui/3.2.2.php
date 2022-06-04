@@ -9,7 +9,7 @@ $mysqli = $conf->mysqli;
 if(isset($_POST['previw'], $_POST['edit_id']) && $_POST['previw'] == 'eval' && is_numeric($_POST['edit_id'])) {
     $edit_id = $mysqli->real_escape_string($_POST['edit_id']);
     $evaluation = [];
-    $query = "		SELECT `rating`, `eval_name`
+    $query = "		SELECT `rating`, `eval_name`, `eval_date`
                     FROM `eval_view`
                     WHERE `project_id` = $edit_id; ";
     $result = $mysqli->query($query);
@@ -25,7 +25,7 @@ if(isset($_POST['previw'], $_POST['edit_id']) && $_POST['previw'] == 'eval' && i
 $conf->header('ΕΛΙΔΕΚ - Αξιολόγησεις των έργων');
 $conf->menu($active = basename(__FILE__, '.php'));
 
-$query = "  SELECT DISTINCT `project_id`, `title`, `eval_date`, `abbreviation`
+$query = "  SELECT DISTINCT `project_id`, `title`, `abbreviation`
             FROM `eval_view` ";
 $result = $mysqli->query($query);
 $data = [];
