@@ -254,7 +254,10 @@ DELETE FROM FieldProject;
 INSERT INTO organization (abbreviation, name, type, budget, street, street_number, postal_code, city) VALUES 
 
 -- unis:12
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca64c204924fc854461ba77b718318f7a1b77a3a
 ('UOI', 'Πανεπιστήμιο Ιωαννίνων', 'uni', '{"ministry":"104000"}', 'Λεωφόρος Σταύρου Νιάρχου', '60', '45500','Ιωάννινα'),
 ('UOA', 'Εθνικό και Καποδιστριακό Πανεπιστήμιο Αθηνών', 'uni','{"ministry":"150000"}','Υμηττού', '5', '15772', 'Ζωγράφου'),
 ('UOP', 'Πανεπιστήμιο Πατρών', 'uni','{"ministry":"107850"}', 'Πανεπιστημιούπολη', NULL , '26504', 'Πάτρα'),
@@ -299,6 +302,7 @@ INSERT INTO organization (abbreviation, name, type, budget, street, street_numbe
 ('PENTE','ΠΕΝΤΕ Α.Ε.', 'co', '{"capital":"73000"}', 'Αγ.Δημητρίου των Όπλων', '10', '24001','Κολωνός'), 
 ('ELKAL','ΕΛΛΗΝΙΚΑ ΚΑΛΩΔΙΑ Α.Ε.', 'co', '{"capital":"700000"}', 'Ευμένους', '88', '11472','Μαρούσι'), 
 ('PAPASTR','ΠΑΠΑΣΤΡΑΤΟΣ', 'co', '{"capital":"400000"}', 'Ναύαρχου Βούλγαρη', '33', '54632','Ασπρόπυργος'); 
+
 
 INSERT INTO `organization__phone` (`phone`, `abbreviation`) VALUES
 ('2417518131', 'ALOUMIL'),
