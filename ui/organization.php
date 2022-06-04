@@ -312,7 +312,7 @@ function form($type, $data = NULL, $phone=NULL) {
                 </label>
             </div> <?php
             if(isset($data['type']) && !empty($data['type'])) {
-                budgetInput($data['type'],$data['budget']);
+                budgetInput($type,$data['type'],$data['budget']);
             } ?>
             <div class="input-field">
                 <input type="text" class="form-control" id="organization_street" name="organization[street]" value="<?php echo $data['street'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
