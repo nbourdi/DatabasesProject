@@ -157,9 +157,6 @@ CREATE TABLE evaluates (
 	CONSTRAINT fk_evaluates_researcher FOREIGN KEY (researcher_id)
 		REFERENCES researcher (researcher_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
--- ----------------------------------------
--- Create View 3 for the ELIDEK database --
--- ----------------------------------------
 
 
 -- ----------------------------------------
@@ -167,19 +164,27 @@ CREATE TABLE evaluates (
 -- ----------------------------------------
 
 use elidek;
--- not sure it's what we want.
 
-CREATE VIEW projectresearcher_vw AS
-SELECT DISTINCT 
-P.project_id, P.title, R.researcher_id,
-concat(R.first_name,' ',R.last_name) AS full_name, 
-DATE_FORMAT(FROM_DAYS(DATEDIFF(now(),R.birth_date)), '%Y')+0  AS age, R.gender
-FROM project P
-INNER JOIN WorksOn W 
-ON W.project_id = P.project_id 
-INNER JOIN researcher R
-ON W.researcher_id = R.researcher_id
-ORDER BY age;
+DROP VIEW IF EXISTS `projectresearcher_vw`;
+CREATE VIEW `projectresearcher_vw` AS
+SELECT `p`.`project_id`, `p`.`title`, `r`.`researcher_id`, CONCAT(`r`.`first_name`,' ',`r`.`last_name`) AS `full_name`, `o`.`name` `organization` 
+FROM `project` `p` 
+JOIN `WorksOn` `w` 
+ON `w`.`project_id` = `p`.`project_id` 
+JOIN `researcher` `r` 
+ON `w`.`researcher_id` = `r`.`researcher_id` 
+JOIN `organization` `o` 
+ON `r`.`abbreviation` = `o`.`abbreviation`; 
+
+-- ----------------------------------------
+-- Create View 2 for the ELIDEK database --
+-- ----------------------------------------
+
+DROP VIEW IF EXISTS `eval_view`;
+CREATE VIEW `eval_view` AS 
+SELECT `e`.`rating`, `e`.`eval_date`, `e`.`researcher_id`, `p`.`project_id`, `p`.`title`, `p`.`abbreviation`
+FROM `evaluates` `e`
+INNER JOIN `project` `p` ON `e`.`project_id` = `p`.`project_id`;
 
 -- ----------------------------------------
 -- Create View 3: project for the ELIDEK database --
@@ -201,6 +206,8 @@ ON `p`.`project_id` = `f`.`project_id`
 JOIN `organization` `o`
 ON `p`.`abbreviation` = `o`.`abbreviation`
 GROUP BY `p`.`project_id`;
+
+
 
 
 -- --------------------
@@ -255,6 +262,7 @@ DELETE FROM FieldProject;
 INSERT INTO organization (abbreviation, name, type, budget, street, street_number, postal_code, city) VALUES 
 
 -- unis:12
+
 ('UOI', 'Πανεπιστήμιο Ιωαννίνων', 'uni', '{"ministry":"104000"}', 'Λεωφόρος Σταύρου Νιάρχου', '60', '45500','Ιωάννινα'),
 ('UOA', 'Εθνικό και Καποδιστριακό Πανεπιστήμιο Αθηνών', 'uni','{"ministry":"150000"}','Υμηττού', '5', '15772', 'Ζωγράφου'),
 ('UOP', 'Πανεπιστήμιο Πατρών', 'uni','{"ministry":"107850"}', 'Πανεπιστημιούπολη', NULL , '26504', 'Πάτρα'),

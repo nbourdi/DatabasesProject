@@ -6,14 +6,13 @@
 use elidek;
 -- not sure it's what we want.
 
-CREATE VIEW projectresearcher_vw AS
-SELECT DISTINCT 
-P.project_id, P.title, R.researcher_id,
-concat(R.first_name,' ',R.last_name) AS full_name, 
-DATE_FORMAT(FROM_DAYS(DATEDIFF(now(),R.birth_date)), '%Y')+0  AS age, R.gender
-FROM project P
-INNER JOIN WorksOn W 
-ON W.project_id = P.project_id 
-INNER JOIN researcher R
-ON W.researcher_id = R.researcher_id
-ORDER BY age;
+DROP VIEW IF EXISTS `projectresearcher_vw`;
+CREATE VIEW `projectresearcher_vw` AS
+SELECT `p`.`project_id`, `p`.`title`, `r`.`researcher_id`, CONCAT(`r`.`first_name`,' ',`r`.`last_name`) AS `full_name`, `o`.`name` `organization` 
+FROM `project` `p` 
+JOIN `WorksOn` `w` 
+ON `w`.`project_id` = `p`.`project_id` 
+JOIN `researcher` `r` 
+ON `w`.`researcher_id` = `r`.`researcher_id` 
+JOIN `organization` `o` 
+ON `r`.`abbreviation` = `o`.`abbreviation`; 
