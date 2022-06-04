@@ -4,7 +4,6 @@ This is a project for the ECE NTUA Databases course, spring semester 2021-2022.
 
 - [Konstantinos Xidias](https://github.com/xidias)
 - [Natalia Bourdi](https://github.com/nbourdi)
-- [Evita Pappa](https://github.com/evitapp)
 
 
 # How to set up the database and web app
