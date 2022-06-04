@@ -308,7 +308,7 @@ $(document).ready(function(){
 					}	
 				}
 				else if(response.action == 'delete') {
-					$(modarBtnObj).closest('tr').remove();
+					$(modarBtnObj).closest('tr').slideUp(); //.remove()
 				}
 				// UPDATE COUNT LIST
 				if(typeof $('span.count-list') !== 'undefined') {
@@ -476,7 +476,7 @@ $(document).ready(function(){
 			form = object.closest('form'),
 			type = object.val();
 			form.find('.organization-budget').each(function() {
-				$(this).parent().remove();
+				$(this).parent().slideUp();
 			});
 			var input = $.ajax({
 				url: form.attr('action'),
@@ -485,7 +485,7 @@ $(document).ready(function(){
 				dataType: 'html',
 				async: false}).responseText;
 			//console.error(itemUpdate);
-			$(input).insertAfter(object.closest('.btn-group.btn-group-toggle.organization-type'));
+			$(input).insertAfter(object.closest('.btn-group.btn-group-toggle.organization-type')).hide().show('slow');
 		});
 
 		// add phone
@@ -503,7 +503,13 @@ $(document).ready(function(){
 				dataType: 'html',
 				async: false}).responseText;
 			//console.error(itemUpdate);
-			$(input).insertBefore(object);
+			$(input).insertBefore(object).hide().show('slow');
+		});
+		// remove phone
+		$('body').on('click', '.remove-phone[data-organization=phone]', function(e){
+			e.preventDefault();
+			var object = $(this);
+			object.closest('.input-field.input-group').slideUp();
 		});
 
 

@@ -8,7 +8,7 @@ $mysqli = $conf->mysqli;
 // DISPLAY FORM FOR INSERT, UPDATE & DELETE
 if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'organization' && in_array($_POST['type'],['insert','update','delete'])) {
 	$type = $mysqli->real_escape_string($_POST['type']);
-	$data = [];
+	$organization = [];
 	if(isset($_POST['edit_id']) && $_POST['edit_id'] != '' ) {
 		$edit_id = $mysqli->real_escape_string($_POST['edit_id']);
 		$query = "	SELECT `abbreviation`, `name`, `type`, `budget`,`street`,`street_number`, `postal_code`, `city`
@@ -17,11 +17,21 @@ if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'organization' && 
 		//echo $query; exit;
 		$result = $mysqli->query($query);
 		if ($result->num_rows > 0) {
-		  $data = $result->fetch_assoc();
+		  $organization = $result->fetch_assoc();
 		}
 	}
-    //echo '<pre>';print_r($data);echo '</pre>';
-	form($type, $data);
+    //echo '<pre>';print_r($organization);echo '</pre>';
+    $phone = [];
+    $sql = "SELECT `phone`
+    FROM `organization__phone`
+    WHERE `abbreviation` = '$edit_id'; ";
+    $result = $mysqli->query($sql);
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            $phone[] = $row['phone'];
+        }
+    }
+	form($type,$organization,$phone);
 	exit;
 }
 
@@ -47,6 +57,21 @@ if(isset($_POST['elementDetails'], $_POST['elementId']) && $_POST['elementDetail
     exit;
 }
 
+// DISPLAY POPOVER PHONES
+if(isset($_POST['elementDetails'], $_POST['elementId']) && $_POST['elementDetails'] == 'phone' && $_POST['elementId'] != '') {
+    $abbreviation = $mysqli->real_escape_string($_POST['elementId']);
+    $sql = "SELECT `phone`
+            FROM `organization__phone`
+            WHERE `abbreviation` = '$abbreviation'; ";
+    $result = $mysqli->query($sql);
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            echo $row['phone'].'<br>';
+        }
+    }
+    exit;
+}
+
 
 if(isset($_POST['organization'], $_POST['abbreviation']) && in_array($_POST['organization'], ['uni','inst','co']) && $_POST['abbreviation'] != '') {
     $type = $mysqli->real_escape_string($_POST['organization']);
@@ -58,6 +83,61 @@ if(isset($_POST['organization'], $_POST['abbreviation']) && $_POST['organization
     $abbreviation = $mysqli->real_escape_string($_POST['abbreviation']);
     phoneInput($abbreviation);
     exit;
+}
+
+// INSERT OR UPDATE OR DELETE TO DB
+if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) {
+	echo '<pre>';print_r($_POST);echo '</pre>';exit;
+	$action = $mysqli->real_escape_string($_POST['db']);
+	$query = '';
+	$edit_id = 0;
+	if($action == 'insert' && isset($_POST['program']) && is_array($_POST['program'])) {
+		$columns = [];
+		$values = [];
+		foreach($_POST['program'] as $column => $value) {
+			$column = $mysqli->real_escape_string($column);
+			if(in_array($column, ['title','department'])) {
+				$columns[] = "`$column`";
+                if($conf->isDate($value))
+                    $value = $conf->dateToDb($value);
+				$value = $mysqli->real_escape_string($value);
+				$values[] = "'$value'";
+			}
+		}
+		$columns = implode(',',$columns);
+		$values = implode(',',$values);
+		$query = "INSERT INTO `program` ($columns) VALUES ($values);";
+	}
+	else if($action == 'update' && isset($_POST['edit_id'], $_POST['program']) && $_POST['edit_id'] && is_array($_POST['program'])) {
+		$edit_id = $mysqli->real_escape_string($_POST['edit_id']);
+		$fields = [];
+		foreach($_POST['program'] as $column => $value) {
+			$column = $mysqli->real_escape_string($column);
+			if(in_array($column, ['title','department'])) {
+                if($conf->isDate($value))
+                    $value = $conf->dateToDb($value);
+				$value = $mysqli->real_escape_string($value);
+				$fields[] = "`$column` = '$value'";
+			}
+		}
+		$fields = implode(',',$fields);
+		$query = "	UPDATE `program`
+                    SET $fields
+                    WHERE `program_id` = $edit_id ";
+	}
+	else if($action == 'delete' && isset($_POST['edit_id']) && $_POST['edit_id']) {
+		$edit_id = $mysqli->real_escape_string($_POST['edit_id']);
+		$fields = [];
+		$query = "	DELETE FROM `program`
+					WHERE `program_id` = $edit_id ";
+	}
+	//echo '###'.$query;exit;
+	if($mysqli->query($query))
+		echo json_encode(['status'=>'success', 'action'=>$action, 'edit_id'=>$edit_id ? $edit_id : $mysqli->insert_id ]);
+	else
+		echo json_encode(['status'=>'failure']);
+	//echo '<pre>';print_r($fields);echo '</pre>';
+	exit;
 }
 
 
@@ -107,6 +187,7 @@ if ($result->num_rows > 0) {
                 <th>Προϋπολογισμός</th>
                 <th>Διεύθυνση</th>
                 <th></th>
+                <th></th>
                 <th colspan="1">
                     <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="Προσθήκη οργανισμού" 
                         data-content='{"form":"organization","type":"insert"}'> 
@@ -152,6 +233,11 @@ function listItem($key, $row) {
         </td>
         <td><?php echo $row['address']; ?></td>
         <td>
+            <a class="element-details" data-name="phone" data-id="<?php echo $key; ?>" href="javascript:void(0)">
+                <?php echo $icon->phone; ?>
+            </a>
+        </td>
+        <td>
             <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Επεξεργασία οργανισμού (id: '.$key.')'; ?>" 
                 data-content='{"form":"organization","type":"update","edit_id":"<?php echo $key; ?>"}' data-success="Η προσθήκη του οργανισμού ολοκληρώθηκε."
                 data-failure="Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά." class="">
@@ -168,7 +254,7 @@ function listItem($key, $row) {
 }
 
 
-function form($type, $data = NULL) {
+function form($type, $data = NULL, $phone=NULL) {
     $save_btn = ['insert'=>'Αποθήκευση', 'update'=>'Αποθήκευση', 'delete'=>'Διαγραφή'];
     $save_btn_disabled = ['insert'=>'disabled', 'update'=>'disabled'];
     $message = ['delete' => 'Να γίνει οριστική διαγραφή της εγγραφής;'];
@@ -204,12 +290,10 @@ function form($type, $data = NULL) {
             <div class="input-field">
                 <input type="text" class="form-control" id="organization_street" name="organization[street]" value="<?php echo $data['street'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
                 <label for="organization_street" class="form-label">Οδός</label>
-                <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field">
-                <input type="text" class="form-control" id="organization_street_number" name="organization[street_number]" required value="<?php echo $data['street_number'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
-                <label for="organization_street_number" class="form-label">Αριθμός<span class="text-danger">&nbsp;*</span></label>
-                <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+                <input type="text" class="form-control" id="organization_street_number" name="organization[street_number]" value="<?php echo $data['street_number'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
+                <label for="organization_street_number" class="form-label">Αριθμός</label>
             </div>
             <div class="input-field">
                 <input type="text" class="form-control" id="organization_postal_code" name="organization[postal_code]" required value="<?php echo $data['postal_code'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
@@ -220,7 +304,12 @@ function form($type, $data = NULL) {
                 <input type="text" class="form-control" id="organization_city" name="organization[city]" required value="<?php echo $data['city'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
                 <label for="organization_city" class="form-label">Πόλη<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
-            </div>
+            </div> <?php
+            if(!empty($phone)) {
+                foreach ($phone as $value) {
+                    phoneInput($type, $data['abbreviation'], $value );
+                }
+            } ?>
             <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="btn btn-light add-phone" title="<?php echo 'Προσθήκη τηλεφώνου (id: '.($data['abbreviation']??'').')'; ?>" 
                 data-organization="phone" data-abbreviation="<?php echo $data['abbreviation']??''; ?>">
                 Προσθήκη τηλεφώνου
@@ -278,26 +367,14 @@ function budgetInput($type,$budget = NULL) {
     }
 }
 
-function phoneInput($abbreviation, $phone = NULL) { ?>
-
-<div class="input-group mb-3">
-  <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2">
-  <button class="btn btn-outline-secondary" type="button" id="button-addon2">Button</button>
-</div>
-
-
-
-
-<div class="input-field input-group">
+function phoneInput($type, $abbreviation, $phone = NULL) {
+    global $icon; ?>
+    <div class="input-field input-group">
         <input type="text" class="form-control" id="organization_phone" name="organization__phone[][phone]" required value="<?php echo $phone; ?>" <?php echo @$read_only[$type]??''; ?> >
         <label for="organization_phone" class="form-label">Τηλέφωνο<span class="text-danger">&nbsp;*</span></label>
         <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
-        <button class="btn btn-outline-secondary" type="button" id="button-addon2">Button</button>
-    </div>
-
-    <div class="input-field">
-        <input type="text" class="form-control" id="organization_phone" name="organization__phone[][phone]" required value="<?php echo $phone; ?>" <?php echo @$read_only[$type]??''; ?> >
-        <label for="organization_phone" class="form-label">Τηλέφωνο<span class="text-danger">&nbsp;*</span></label>
-        <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+        <button class="btn btn-outline-secondary remove-phone" type="button" data-organization="phone">
+            <?php echo $icon->delete; ?>
+        </button>
     </div> <?php
 }

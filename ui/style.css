@@ -3,7 +3,7 @@
 
 .form-control {padding:1rem .75rem .125rem;}
 .form-control:focus {box-shadow:none;}
-.form-control ~ label {position:absolute;pointer-events: none;left:.75rem;top:.75rem;transition:top .5s;}
+.form-control ~ label {position:absolute;pointer-events: none;left:.75rem;top:.75rem;transition:top .5s;z-index: 3;}
 .form-control.has-value ~ label,
 .form-control:focus ~ label {font-size:.8rem;top:0;}
 label.btn {box-shadow:none!important;}
@@ -16,6 +16,7 @@ label.btn {box-shadow:none!important;}
     background-color: #3f3f3f;
     border-color: #3f3f3f;
 }
+svg {pointer-events: none;}
 
 
 select.selectpicker + .dropdown-toggle {
