@@ -11,14 +11,14 @@ USE elidek;
 -- ----------------------------------------
 
 
-CREATE TABLE organization ( -- inserted
+CREATE TABLE organization (
 	abbreviation VARCHAR(15) NOT NULL,
-    name VARCHAR(70),
+    name VARCHAR(70) NOT NULL,
     type ENUM('uni','co','inst'),
     budget JSON,
     street VARCHAR(50),
     street_number INT UNSIGNED,
-	postal_code INT(10) DEFAULT NULL,
+	postal_code INT(10),
     city VARCHAR(50) NOT NULL,
 	PRIMARY KEY (abbreviation)
 );
@@ -35,7 +35,7 @@ CREATE TABLE program (
 
 -- Table structure for table 'executive'
 
-CREATE TABLE executive ( -- inserted
+CREATE TABLE executive ( 
 	executive_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 	first_name VARCHAR(45) NOT NULL,
 	last_name VARCHAR(45) NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE executive ( -- inserted
 
 -- Table structure for table 'field'
 
-CREATE TABLE field ( -- inserted
+CREATE TABLE field ( 
 	field_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     field_name VARCHAR(70),
     PRIMARY KEY (field_id)
@@ -52,12 +52,12 @@ CREATE TABLE field ( -- inserted
 
 -- Table structure for table 'researcher'
 
-CREATE TABLE researcher ( -- inserted
+CREATE TABLE researcher ( 
 	researcher_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 	first_name VARCHAR(45) NOT NULL,
 	last_name VARCHAR(45) NOT NULL,
 	gender ENUM('male', 'female') ,
-	birth_date DATE,	-- FORMAT: YYYY-MM-DD --
+	birth_date DATE,	
     abbreviation VARCHAR(15) NOT NULL,  -- WORKSFOR
     since_date DATE,
     CONSTRAINT fk_worksfor_organization FOREIGN KEY (abbreviation)
@@ -67,7 +67,7 @@ CREATE TABLE researcher ( -- inserted
 
 -- Table structure for table 'project'
 
-CREATE TABLE project ( -- inserted
+CREATE TABLE project ( 
 	project_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 	title VARCHAR(255) NOT NULL,
     amount FLOAT(9,2) ,              -- EXAMPLE: 108000.25 --
