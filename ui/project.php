@@ -436,11 +436,13 @@ function preview($project,$deliverable) {
     ?>
     <div class="container">
         <h4><?php echo $project['title']; ?></h4>
-        <p><?php echo $project['summary']; ?></p>
-        <h4 class="my-4">Παραδοτέα</h4> <?php
+        <p><?php echo $project['summary']; ?></p>   <?php
+        if(!empty($deliverable)) { ?>
+            <h4 class="my-4">Παραδοτέα</h4> <?php
             foreach ($deliverable as $key => $row) { ?>
                 <h5><?php echo $row['deliverable_id'];?></h5>
                 <p><?php echo $row['summary'];?></p> <?php
-            } ?>
+            }
+        } ?>
     </div> <?php
 }
