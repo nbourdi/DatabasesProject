@@ -300,6 +300,7 @@ INSERT INTO organization (abbreviation, name, type, budget, street, street_numbe
 ('ELKAL','ΕΛΛΗΝΙΚΑ ΚΑΛΩΔΙΑ Α.Ε.', 'co', '{"capital":"700000"}', 'Ευμένους', '88', '11472','Μαρούσι'), 
 ('PAPASTR','ΠΑΠΑΣΤΡΑΤΟΣ', 'co', '{"capital":"400000"}', 'Ναύαρχου Βούλγαρη', '33', '54632','Ασπρόπυργος'); 
 
+
 INSERT INTO `organization__phone` (`phone`, `abbreviation`) VALUES
 ('2417518131', 'ALOUMIL'),
 ('2230489228', 'AUEB'),
