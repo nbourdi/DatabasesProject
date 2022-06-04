@@ -28,9 +28,13 @@ if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'project' && in_ar
 if(isset($_POST['previw'], $_POST['edit_id']) && $_POST['previw'] == 'project' && is_numeric($_POST['edit_id'])) {
     $edit_id = $mysqli->real_escape_string($_POST['edit_id']);
     $project = [];
-    $query = "	SELECT `project_id`, `title`, `summary`
-                FROM `project`
-                WHERE `project_id` = $edit_id; ";
+    $query = "	SELECT  `p`.`project_id`,  `p`.`title`,  `p`.`summary`, GROUP_CONCAT(DISTINCT `f`.`field_name`) `field`
+                FROM `project` `p`
+                NATURAL JOIN `FieldProject` `fp`
+                JOIN `field` `f`
+                ON `fp`.`field_id` = `f`.`field_id`
+                WHERE  `p`.`project_id` = $edit_id
+                GROUP BY `p`.`project_id`;; ";
     $result = $mysqli->query($query);
     if ($result->num_rows > 0) {
         $project = $result->fetch_assoc();
@@ -38,7 +42,8 @@ if(isset($_POST['previw'], $_POST['edit_id']) && $_POST['previw'] == 'project' &
 
 
     $deliverable = [];
-    $query = "	SELECT d.deliverable_id, d.summary FROM deliverable d
+    $query = "	SELECT d.deliverable_id, d.summary 
+                FROM deliverable d
                 INNER JOIN project p ON d.project_id = p.project_id
                 WHERE `p`.`project_id` = $edit_id; ";
     //echo $query; exit;
@@ -421,10 +426,16 @@ function form($type, $data = NULL) {
 }
 
 function preview($project,$deliverable) {
-    //echo '<pre>'; print_r($project);print_r($deliverable);echo'</pre>';
-    ?>
+    //echo '<pre>'; print_r($project);print_r($deliverable);echo'</pre>'; ?>
     <div class="container">
         <h4><?php echo $project['title']; ?></h4>
+        <div class="mb-2"> <?php
+            foreach (explode(',',$project['field']) as $field) { ?>
+                <span class="badge bg-secondary">
+                    <?php echo $field.'<br>'; ?>
+                </span>  <?php
+            } ?>
+        </div>
         <p><?php echo $project['summary']; ?></p>   <?php
         if(!empty($deliverable)) { ?>
             <h4 class="my-4">Παραδοτέα</h4> <?php
