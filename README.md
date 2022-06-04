@@ -22,7 +22,7 @@ The above can be installed and configured either individually or as a stack.
 
 2. Run the XAMPP Control Panel with administrative priviledges and start the Apache and MySQL services.
 
-3. Click on the "Explorer" button and navigate to `\xampp\mysql\bin`. Copy [quick-set-up.sql](https://github.com/evitapp/db-3/blob/main/quick-set-up.sql) to the directory.
+3. Click on the "Explorer" button and navigate to `\xampp\mysql\bin`. Copy [quick-set-up.sql](https://github.com/nbourdi/DatabasesProject/blob/main/quick-set-up.sql) to the directory.
 
 4. Set up the database with all initial mock data inserted.
 
@@ -36,7 +36,7 @@ The above can be installed and configured either individually or as a stack.
   ```
   You will be asked to enter your password. If you have not set it, simply press Enter.
 
-5. Navigate to `\xampp\htdocs`, create a new directory "elidek" and place the contents of the [ui](https://github.com/evitapp/db-3/tree/main/ui) folder in it.
+5. Navigate to `\xampp\htdocs`, create a new directory "elidek" and place the contents of the [ui](https://github.com/nbourdi/DatabasesProject/tree/main/ui) folder in it.
 
 6. Open a web browser and go to localhost/elidek.      (should we ask that they also edit index.php to route to /elidek?)
     
