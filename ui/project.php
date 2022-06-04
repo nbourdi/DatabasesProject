@@ -4,23 +4,13 @@ $conf = new Config;
 $icon = new Icon;
 $mysqli = $conf->mysqli;
 
-/* 
-SELECT concat(r.first_name,' ',r.last_name) AS manager, p.abbreviation, p.summary
-FROM project p
-INNER JOIN researcher r ON p.researcher_id = r.researcher_id;
-
-SELECT d.deliverable_id, d.summary FROM deliverable d
-INNER JOIN project p ON d.project_id = p.project_id
-WHERE p.project_id = $edit_id;
- */
-
 // DISPLAY FORM FOR INSERT, UPDATE & DELETE
 if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'project' && in_array($_POST['type'],['insert','update','delete'])) {
 	$type = $mysqli->real_escape_string($_POST['type']);
 	$data = [];
 	if(isset($_POST['edit_id']) && is_numeric($_POST['edit_id'])) {
 		$edit_id = $mysqli->real_escape_string($_POST['edit_id']);
-		$query = "	SELECT `project_id`, `title`, `amount`, DATE_FORMAT(`start_date`, '%d/%m/%Y') `start_date`,  DATE_FORMAT(`end_date`, '%d/%m/%Y') `end_date`, `executive_name`
+		$query = "	SELECT `project_id`,`title`,`amount`,DATE_FORMAT(`start_date`,'%d/%m/%Y') `start_date`,DATE_FORMAT(`end_date`,'%d/%m/%Y') `end_date`,`executive_id`,`executive_name`,`abbreviation`,`organization`,`manager_id`,`manager`,`field`
                     FROM `project_view`
 					WHERE `project_id` = '$edit_id' ";
 		//echo $query; exit;
@@ -216,7 +206,7 @@ $conf->footer();
 
 function dataQuery($filter = 1) {
     global $mysqli;
-    $sql = "SELECT `project_id`, `title`, `amount`, DATE_FORMAT(`start_date`, '%d/%m/%Y') `start_date`,  DATE_FORMAT(`end_date`, '%d/%m/%Y') `end_date`, `duration`, `organization`, `manager`, `executive_name`, `researchers`
+    $sql = "SELECT `project_id`,`title`,`amount`,DATE_FORMAT(`start_date`, '%d/%m/%Y') `start_date`,DATE_FORMAT(`end_date`, '%d/%m/%Y') `end_date`,`duration`,`organization`,`manager`,`executive_name`,`researchers`
         FROM `project_view`
         WHERE $filter ";
     $result = $mysqli->query($sql);
@@ -270,7 +260,7 @@ function dataList($data) {
                         <div class="d-flex flex-column">
                             <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open mb-4" title="<?php echo 'Προβολή έργου - Παραδοτέα'; ?>" 
                                 data-content='{"previw":"project","edit_id":"<?php echo $key; ?>"}'
-                                data-failure="Παρουσιάστηκε σφάλμα, παρακαλώ δοκιμάστε ξανά." class="">
+                                data-failure="Παρουσιάστηκε σφάλμα, παρακαλώ δοκιμάστε ξανά." data-modal-size="lg">
                                 <?php echo $icon->boxArrow; ?>
                             </a>
                             <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open mb-4" title="<?php echo 'Επεξεργασία έργου'; ?>" 
@@ -299,35 +289,26 @@ function dataList($data) {
 function form($type, $data = NULL) {
     global $mysqli;
     $save_btn = ['insert'=>'Αποθήκευση', 'update'=>'Αποθήκευση', 'delete'=>'Διαγραφή'];
-    $save_btn_disabled = ['insert'=>'disabled', 'update'=>'disabled'];
+    $save_btn_disabled = ['insert'=>'', 'update'=>''];
     $message = ['delete' => 'Να γίνει οριστική διαγραφή της εγγραφής;'];
     $success = ['insert'=>'Η προσθήκη των στοιχείων ολοκληρώθηκε.', 'update'=>'Η ενημέρωση των στοιχείων ολοκληρώθηκε.', 'delete'=>'Η διαγραφή ολοκληρώθηκε.'];
     $failure = ['insert'=>'Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά.', 'update'=>'Η ενημέρωση των στοιχείων απέτυχε, παρακαλώ δοκιμάστε ξανά.', 'delete'=>'Η διαγραφή απέτυχε, παρακαλώ δοκιμάστε ξανά.'];
     $read_only = ['delete'=>'disabled'];
-    $query = "SELECT `abbreviation`,`name` FROM `organization` ";
-    $result = $mysqli->query($query);
 
     $organization = [];
-    if ($result->num_rows > 0) {
-        // output data of each row
-        while($row = $result->fetch_assoc()) {
-            $organization[$row['abbreviation']] = $row['name'];
-        }
-    }
     $query = "SELECT `abbreviation`,`name` FROM `organization` ";
     $result = $mysqli->query($query);
-
-    $researcher = [];
     if ($result->num_rows > 0) {
         // output data of each row
         while($row = $result->fetch_assoc()) {
             $organization[$row['abbreviation']] = $row['name'];
         }
     }
+
+    $researcher = [];
     $query = "  SELECT `researcher_id`, CONCAT(`last_name`, ' ', `first_name`) `name`
                 FROM `researcher` ; ";
     $result = $mysqli->query($query);
-    $researcher = [];
     if ($result->num_rows > 0) {
         // output data of each row
         while($row = $result->fetch_assoc()) {
@@ -335,9 +316,20 @@ function form($type, $data = NULL) {
         }
     }
 
+    $executive = [];
+    $query = "  SELECT `executive_id`, CONCAT(`last_name`, ' ', `first_name`) `name`
+                FROM `executive` ; ";
+    $result = $mysqli->query($query);
+    if ($result->num_rows > 0) {
+        // output data of each row
+        while($row = $result->fetch_assoc()) {
+            $executive[$row['executive_id']] = $row['name'];
+        }
+    }
+
+    $field = [];
     $query = "SELECT `field_id`,`field_name` FROM `field` ";
     $result = $mysqli->query($query);
-    $field = [];
     if ($result->num_rows > 0) {
         // output data of each row
         while($row = $result->fetch_assoc()) {
@@ -357,17 +349,17 @@ function form($type, $data = NULL) {
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field">
-                <input type="text" id="researcher_since_date" class="form-control datepicker since-date" name="researcher[since_date]" required value="<?php echo $data['since_date'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?>>
-                <label for="researcher_since_date" class="form-label">Έναρξη<span class="text-danger">&nbsp;*</span></label>
+                <input type="text" id="project_start_date" class="form-control datepicker calendar" name="project[start_date]" required value="<?php echo $data['start_date'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?>>
+                <label for="project_start_date" class="form-label">Έναρξη<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field">
-                <input type="text" id="researcher_since_date" class="form-control datepicker since-date" name="researcher[since_date]" required value="<?php echo $data['since_date'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?>>
-                <label for="researcher_since_date" class="form-label">Λήξη<span class="text-danger">&nbsp;*</span></label>
+                <input type="text" id="project_start_date" class="form-control datepicker calendar" name="project[end_date]" required value="<?php echo $data['end_date'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?>>
+                <label for="project_start_date" class="form-label">Λήξη<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
-                <select class="selectpicker select-organization form-control" name="researcher[abbreviation]" id="researcher_organization" title="Χωρίς επιλογή" required >	<?php
+                <select class="selectpicker select-organization form-control" name="project[organization]" id="project_organization" title="Χωρίς επιλογή" required data-live-search="true" >	<?php
                     foreach($organization as $abbreviation => $name) {	?>
                         <option value="<?php echo $abbreviation; ?>" <?php echo isset($data['abbreviation']) && $data['abbreviation'] == $abbreviation ? 'selected' : '';?> >
                             <?php echo $name; ?>
@@ -378,9 +370,9 @@ function form($type, $data = NULL) {
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
-                <select class="selectpicker select-organization form-control" name="researcher[abbreviation]" id="researcher_organization" title="Χωρίς επιλογή" required >	<?php
+                <select class="selectpicker select-organization form-control" name="project[abbreviation]" id="researcher_organization" title="Χωρίς επιλογή" required required data-live-search="true" >	<?php
                     foreach($researcher as $id => $name) {	?>
-                        <option value="<?php echo $id; ?>" <?php echo isset($data['researcher_id']) && $data['researcher_id'] == $id ? 'selected' : '';?> >
+                        <option value="<?php echo $id; ?>" <?php echo isset($data['manager_id']) && $data['manager_id'] == $id ? 'selected' : '';?> >
                             <?php echo $name; ?>
                         </option>	<?php
                     }	?>
@@ -389,9 +381,20 @@ function form($type, $data = NULL) {
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
-                <select class="selectpicker select-organization form-control" multiple name="researcher[abbreviation]" id="researcher_organization" title="Χωρίς επιλογή" required >	<?php
+                <select class="selectpicker select-organization form-control" name="project[abbreviation]" id="researcher_organization" title="Χωρίς επιλογή" required required data-live-search="true" >	<?php
+                    foreach($executive as $id => $name) {	?>
+                        <option value="<?php echo $id; ?>" <?php echo isset($data['executive_id']) && $data['executive_id'] == $id ? 'selected' : '';?> >
+                            <?php echo $name; ?>
+                        </option>	<?php
+                    }	?>
+				</select>
+                <label for="researcher_organization" class="form-label">Στέλεχος διαχείρισης<span class="text-danger">&nbsp;*</span></label>
+                <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+            </div>
+            <div class="input-field" >
+                <select class="selectpicker select-organization form-control" multiple name="project[abbreviation]" id="researcher_organization" title="Χωρίς επιλογή" required >	<?php
                     foreach($field as $id => $name) {	?>
-                        <option value="<?php echo $id; ?>" <?php echo isset($data['abbreviation']) && $data['abbreviation'] == $id ? 'selected' : '';?> >
+                        <option value="<?php echo $id; ?>" <?php echo isset($data['field']) && in_array($id, explode(',',$data['field'])) ? 'selected' : '';?> >
                             <?php echo $name; ?>
                         </option>	<?php
                     }	?>

@@ -24,6 +24,15 @@ buttons = {
 
 function dateTimePicker() {
 
+	$('.datepicker.calendar').datepicker({
+		format: 'dd/mm/yy',
+		language: 'el',
+		changeMonth: true,
+        changeYear: true,
+	}).on('changeDate', function(e) {
+		$(e.target).addClass('has-value');
+    });
+
 	$('.datepicker.birthday').datepicker({
 		format: 'dd/mm/yy',
 		language: 'el',
@@ -131,10 +140,10 @@ $(document).ready(function(){
 		e.preventDefault();
 		modarBtnObj = $(this);
 		var size = '';
-		if(modarBtnObj.hasClass('modal-lg'))
-			size = 'modal-lg';
-		else if(modarBtnObj.hasClass('modal-xl'))
-			size = 'modal-xl';
+		$('.modal>.modal-dialog').removeClass('modal-md modal-lg modal-xl modal-xxl')
+		if(typeof modarBtnObj.data('modal-size') !== 'undefined') {
+			size = 'modal-'+modarBtnObj.data('modal-size');
+		}
 		modal($(this).data('content'),$(this).attr('title'),size);
 /* 		setTimeout(function(){}, 1000); */
 		$('select').each(function(){
@@ -150,7 +159,7 @@ $(document).ready(function(){
 		url = $('body').data('url');
 		myModal.find('.modal-dialog').addClass(size);
 		if(isJSON(content)) {
-			console.warn(content);
+			console.log(content);
 			var $form = $($.ajax({
 					url: url,
 					type: 'POST',

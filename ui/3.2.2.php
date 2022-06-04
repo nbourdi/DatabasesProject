@@ -9,7 +9,7 @@ $mysqli = $conf->mysqli;
 $conf->header('ΕΛΙΔΕΚ - Αξιολογήσεις');
 $conf->menu($active = basename(__FILE__, '.php'));
 
-$query = " SELECT DISTINCT `project_id`, `title`, `abbreviation`, `eval_name`, `eval_date`, `rating`
+$query = " SELECT DISTINCT `project_id`, `title`, `abbreviation`, `eval_name`,  DATE_FORMAT(`eval_date`, '%d/%m/%Y') `eval_date`, `rating`
             FROM `eval_view`  ";
 $result = $mysqli->query($query);
 $data = [];

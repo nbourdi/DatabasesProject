@@ -96,7 +96,7 @@ class Config {
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                         <li><a class="dropdown-item" href="#">3.1 - Προγράμματα & έργα</a></li>
-                        <li><a class="dropdown-item" href="3.2.php">3.2.1 - Έργα ανά ερευνητή</a></li>
+                        <li><a class="dropdown-item" href="3.2.1.php">3.2.1 - Έργα ανά ερευνητή</a></li>
 						<li><a class="dropdown-item" href="3.2.2.php">3.2.2 - Αξιολογήση ανά έργο</a></li>
                         <li><a class="dropdown-item" href="3.3.php">3.3 - Ενδιαφέρον ερευνητικό πεδίο</a></li>
                         <li><a class="dropdown-item" href="3.4.php">3.4 - Πιο ενεργοί οργανισμοί</a></li>

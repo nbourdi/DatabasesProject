@@ -147,8 +147,10 @@ if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) 
         $condition = $condition && $mysqli->query($queryDeletePhone);
         $values = [];
         foreach($_POST['organization__phone'] as $phone) {
-            $value = $mysqli->real_escape_string($value);
-            $values[] = "('$phone', '$abbreviation')";
+            if($value) {
+                $value = $mysqli->real_escape_string($value);
+                $values[] = "('$phone', '$abbreviation')";
+            }
         }
         $values = implode(',',$values);
         $queryInsertPhone = "INSERT INTO `organization__phone` (`phone`,`abbreviation`) VALUES $values;";
