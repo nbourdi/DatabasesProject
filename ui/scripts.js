@@ -23,14 +23,7 @@ buttons = {
     };
 
 function dateTimePicker() {
-/* 	$('.timepicker').datetimepicker({
-		toolbarPlacement: 'bottom',
-		buttons: buttons,
-		//icons: icons,
-		format: 'HH:mm',
-		stepping: 15,
-		autoclose: true
-	}); */
+
 	$('.datepicker.birthday').datepicker({
 		format: 'dd/mm/yy',
 		language: 'el',
@@ -86,36 +79,10 @@ $('input.daterange').each(function() {
 });
 
 
-	//----------------------------- input range -----------------------------
     
-	//alert($('range-container min')).val(); 
-    $('.range-input').each(function() {
-        
-        var element = $(this), min = element.data('min'), max = element.data('max'),
-        step = element.data('step'), minVal = element.siblings('.min').val(),
-        maxVal = element.siblings('.max').val();
-        element.siblings('.display').find('.min').text(minVal);
-        element.siblings('.display').find('.max').text(maxVal);
-        element.slider({
-            range:true,
-            min:min,
-            max:max,
-            values:[minVal, maxVal],
-            step:step,
-            stop:function(event, ui) {
-                element.siblings('.display').find('.min').text(ui.values[0]);
-                element.siblings('.display').find('.max').text(ui.values[1]);
-                element.siblings('.min').val(ui.values[0])
-                element.siblings('.max').val(ui.values[1])
-                if($(this).closest('#project-filters').length)
-                postFilters($(this));
-            }
-        })
-    });
+    //----------------------------- POPOVER -----------------------------
     
-    //----------------------------- popover -----------------------------
-    
-    // POPOVER
+
     $(function () {
         $('.element-details').popover({
             html: true,
@@ -142,7 +109,7 @@ $('input.daterange').each(function() {
 		});
     });
 
-    //----------------------------- modal -----------------------------
+    //----------------------------- MODAL -----------------------------
 
 	
 $(document).ready(function(){
@@ -158,7 +125,7 @@ $(document).ready(function(){
 			return false;
 		}
 	}
-	// MODAL
+	// OPEN MODAL
 	var modarBtnObj;
 	$('body').on('click', '.modal-open', function (e) {
 		e.preventDefault();
@@ -177,6 +144,7 @@ $(document).ready(function(){
 		//tooltip();
 	});
 	
+	//MODAL CONTENT
 	function modal(content, title = '', size = '') {
 		var myModal = $('#modal'),
 		url = $('body').data('url');
@@ -231,8 +199,8 @@ $(document).ready(function(){
 		//console.log(myModal.attr('data-sourse'));
 	}
 
+	//----------------------------- FORM CONTROL -----------------------------
 
-	// FORM CONTROL
 	$('body').on('focus', '.form-control', function (e) {
 		e.preventDefault();
 		if($(this).val() == '' && !$(this).hasClass('bootstrap-select'))
@@ -279,13 +247,15 @@ $(document).ready(function(){
 	});
 
 
-	// FORM SUBMIT
+ 	//----------------------------- FORM SUBMIT -----------------------------
+
 	$('body').on('click', 'button[type=submit]', function(e){
 		e.preventDefault();
 		var object = $(this),
 		error = false,
 		form = object.closest('form'),
 		fields = form.find('.form-control');
+		// required inputs
 		fields.each(function(){
 			if($(this).prop('required') && $(this).val() == '') {
 				error = true;
@@ -323,7 +293,6 @@ $(document).ready(function(){
 					edit_id = JSON.parse($(modarBtnObj).attr('data-content')).parent.id;
 				}
 				//UPDATE LIST AFTER INSERT, UPDATE, DELETE
-
 				if($.inArray(response.action, ['insert','update']) !== -1) {
 					var itemUpdate = $.ajax({
 						url: form.attr('action'),
@@ -410,6 +379,36 @@ $(document).ready(function(){
 		postFilters($(this));
 	});
 	
+});
+
+
+	//----------------------------- input range -----------------------------
+    
+	//alert($('range-container min')).val(); 
+    $('.range-input').each(function() {
+        
+        var element = $(this), min = element.data('min'), max = element.data('max'),
+        step = element.data('step'), minVal = element.siblings('.min').val(),
+        maxVal = element.siblings('.max').val();
+        element.siblings('.display').find('.min').text(minVal);
+        element.siblings('.display').find('.max').text(maxVal);
+        element.slider({
+            range:true,
+            min:min,
+            max:max,
+            values:[minVal, maxVal],
+            step:step,
+            stop:function(event, ui) {
+                element.siblings('.display').find('.min').text(ui.values[0]);
+                element.siblings('.display').find('.max').text(ui.values[1]);
+                element.siblings('.min').val(ui.values[0])
+                element.siblings('.max').val(ui.values[1])
+                if($(this).closest('#project-filters').length)
+                postFilters($(this));
+            }
+        })
+    });
+
 	function postFilters(element) {
 		var objForm = element.closest('form'),
 		uri = objForm.attr('action'),
@@ -432,7 +431,7 @@ $(document).ready(function(){
 			}
 		});
 	}
-});
+	
 
 	//----------------------------- choose field filters -----------------------------
 
@@ -470,6 +469,7 @@ $(document).ready(function(){
 	//----------------------------- organization form -----------------------------
 
 	$(document).ready(function(){
+		// choose type (radio)
 		$('body').on('click', '.organization-type label.radio-btn', function(e){
 			e.preventDefault();
 			var object = $(this).children('input[type="radio"][name="organization[type]"]:checked'),
@@ -487,4 +487,24 @@ $(document).ready(function(){
 			//console.error(itemUpdate);
 			$(input).insertAfter(object.closest('.btn-group.btn-group-toggle.organization-type'));
 		});
+
+		// add phone
+		$('body').on('click', '.add-phone[data-organization=phone]', function(e){
+			e.preventDefault();
+			var object = $(this),
+			abbreviation = object.data('abbreviation'),
+			form = object.closest('form');
+			//alert(abbreviation)
+
+			var input = $.ajax({
+				url: form.attr('action'),
+				type: 'POST',
+				data: $.param({organization: 'phone', abbreviation: abbreviation}),
+				dataType: 'html',
+				async: false}).responseText;
+			//console.error(itemUpdate);
+			$(input).insertBefore(object);
+		});
+
+
 	});

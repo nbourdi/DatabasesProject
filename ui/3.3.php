@@ -7,20 +7,10 @@ $mysqli = $conf->mysqli;
 
 //echo '<pre>'; print_r($_POST);echo'</pre>';
 if(isset($_POST['filters'], $_POST['field_id']) && $_POST['filters'] == 'field' && is_numeric($_POST['field_id']))  {
-    $filter = [];
-
-     if(isset($_POST['filter']['executive']) && is_array($_POST['filter']['executive']) && ctype_digit(implode('',array_keys($_POST['filter']['executive'])))) {
-        $executives = implode(',',array_keys($_POST['filter']['executive']));
-        if(!empty($_POST['filter']['executive']))
-            $filter[] = "`executive_id` IN($executives)";
-    }
     $field = $mysqli->real_escape_string($_POST['field_id']);
-
     doubleTable(dataQuery1($field),dataQuery2($field));
     exit;
 }
-
-
 
 $conf->header('ΕΛΙΔΕΚ');
 $conf->menu($active = basename(__FILE__, '.php'));

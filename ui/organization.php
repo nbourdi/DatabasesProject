@@ -54,6 +54,12 @@ if(isset($_POST['organization'], $_POST['abbreviation']) && in_array($_POST['org
     exit;
 }
 
+if(isset($_POST['organization'], $_POST['abbreviation']) && $_POST['organization'] == 'phone') {
+    $abbreviation = $mysqli->real_escape_string($_POST['abbreviation']);
+    phoneInput($abbreviation);
+    exit;
+}
+
 
 $conf->header('ΕΛΙΔΕΚ - Οργανισμοί');
 $conf->menu($active = basename(__FILE__, '.php'));
@@ -102,7 +108,7 @@ if ($result->num_rows > 0) {
                 <th>Διεύθυνση</th>
                 <th></th>
                 <th colspan="1">
-                    <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="Προσθήκη ερευνητή" 
+                    <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="Προσθήκη οργανισμού" 
                         data-content='{"form":"organization","type":"insert"}'> 
                         <?php echo $icon->add; ?>
                     </a>
@@ -146,14 +152,14 @@ function listItem($key, $row) {
         </td>
         <td><?php echo $row['address']; ?></td>
         <td>
-            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Επεξεργασία ερευνητή (id: '.$key.')'; ?>" 
-                data-content='{"form":"organization","type":"update","edit_id":"<?php echo $key; ?>"}' data-success="Η προσθήκη του ερευνητή ολοκληρώθηκε."
+            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Επεξεργασία οργανισμού (id: '.$key.')'; ?>" 
+                data-content='{"form":"organization","type":"update","edit_id":"<?php echo $key; ?>"}' data-success="Η προσθήκη του οργανισμού ολοκληρώθηκε."
                 data-failure="Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά." class="">
                 <?php echo $icon->edit; ?>
             </a>
         </td>
         <td>
-            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Διαγραφή ερευνητή (id: '.$key.')'; ?>" 
+            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Διαγραφή οργανισμού (id: '.$key.')'; ?>" 
                 data-content='{"form":"organization","type":"delete","edit_id":"<?php echo $key; ?>"}'>
                 <?php echo $icon->delete; ?>
             </a>
@@ -215,6 +221,10 @@ function form($type, $data = NULL) {
                 <label for="organization_city" class="form-label">Πόλη<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
+            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="btn btn-light add-phone" title="<?php echo 'Προσθήκη τηλεφώνου (id: '.($data['abbreviation']??'').')'; ?>" 
+                data-organization="phone" data-abbreviation="<?php echo $data['abbreviation']??''; ?>">
+                Προσθήκη τηλεφώνου
+            </a>
 
             <?php
             if(isset($message[$type])) { ?>
@@ -266,4 +276,12 @@ function budgetInput($type,$budget = NULL) {
             break;
     
     }
+}
+
+function phoneInput($abbreviation, $phone = NULL) { ?>
+    <div class="input-field">
+        <input type="text" class="form-control" id="organization_phone" name="organization__phone[][phone]" required value="<?php echo $phone; ?>" <?php echo @$read_only[$type]??''; ?> >
+        <label for="organization_phone" class="form-label">Τηλέφωνο<span class="text-danger">&nbsp;*</span></label>
+        <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+    </div> <?php
 }

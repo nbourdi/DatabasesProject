@@ -34,23 +34,50 @@ if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'project' && in_ar
 	exit;
 }
 
+// PREVIEW
+if(isset($_POST['previw'], $_POST['edit_id']) && $_POST['previw'] == 'project' && is_numeric($_POST['edit_id'])) {
+    $edit_id = $mysqli->real_escape_string($_POST['edit_id']);
+    $project = [];
+    $query = "	SELECT `project_id`, `title`, `summary`
+                FROM `project`
+                WHERE `project_id` = $edit_id; ";
+    $result = $mysqli->query($query);
+    if ($result->num_rows > 0) {
+        $project = $result->fetch_assoc();
+    }
+
+
+    $deliverable = [];
+    $query = "	SELECT d.deliverable_id, d.summary FROM deliverable d
+                INNER JOIN project p ON d.project_id = p.project_id
+                WHERE `p`.`project_id` = $edit_id; ";
+    //echo $query; exit;
+    $result = $mysqli->query($query);
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            $deliverable[] = $row;
+        }
+    }
+    preview($project, $deliverable);
+    //echo $_SERVER['SERVER_ADDR'];
+    exit;
+}
+
+// FILTERS
 if(isset($_POST['filters']) && $_POST['filters'] == 'change')  {
     $filter = [];
     //echo '<pre>'; print_r($_POST);echo'</pre>';
-
      if(isset($_POST['filter']['date']['min'], $_POST['filter']['date']['max']) && $conf->isDate($_POST['filter']['date']['min']) && $conf->isDate($_POST['filter']['date']['max'])) {
         $min = $mysqli->real_escape_string($_POST['filter']['date']['min']);
         $max = $mysqli->real_escape_string($_POST['filter']['date']['max']);
         $filter[] = "(`start_date` BETWEEN STR_TO_DATE('$min', '%d/%m/%Y') AND STR_TO_DATE('$max', '%d/%m/%Y') 
                         OR `end_date` BETWEEN STR_TO_DATE('$min', '%d/%m/%Y') AND STR_TO_DATE('$max', '%d/%m/%Y')) ";
     }
-
      if(isset($_POST['filter']['duration']['min'], $_POST['filter']['duration']['max']) && is_numeric($_POST['filter']['duration']['min']) && is_numeric($_POST['filter']['duration']['max'])) {
         $min = $mysqli->real_escape_string($_POST['filter']['duration']['min']);
         $max = $mysqli->real_escape_string($_POST['filter']['duration']['max']);
         $filter[] = "`duration` BETWEEN $min AND $max";
     }
-
      if(isset($_POST['filter']['executive']) && is_array($_POST['filter']['executive']) && ctype_digit(implode('',array_keys($_POST['filter']['executive'])))) {
         $executives = implode(',',array_keys($_POST['filter']['executive']));
         if(!empty($_POST['filter']['executive']))
@@ -62,7 +89,8 @@ if(isset($_POST['filters']) && $_POST['filters'] == 'change')  {
     dataList($data);
     exit;
 }
- 
+
+// RESEARCHERS
 if(isset($_POST['elementDetails'], $_POST['elementId']) && $_POST['elementDetails'] == 'researchersPerProject' && is_numeric($_POST['elementId'])) {
     $project = $mysqli->real_escape_string($_POST['elementId']);
     $sql = "SELECT CONCAT(`r`.`last_name`, ' ', `r`.`first_name`) `name`
@@ -75,6 +103,20 @@ if(isset($_POST['elementDetails'], $_POST['elementId']) && $_POST['elementDetail
         while($row = $result->fetch_assoc()) {
             echo $row['name'].'<br>';
         }
+    }
+    exit;
+}
+
+// SUMMARY -----------------------
+if(isset($_POST['elementDetails'], $_POST['elementId']) && $_POST['elementDetails'] == 'projectSummary' && is_numeric($_POST['elementId'])) {
+    $project = $mysqli->real_escape_string($_POST['elementId']);
+    $sql = "SELECT `summary`
+            FROM `project`
+            WHERE `project_id` = $project ";
+    $result = $mysqli->query($sql);
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        echo $row['summary'];
     }
     exit;
 }
@@ -188,7 +230,7 @@ $conf->footer();
 
 function dataQuery($filter = 1) {
     global $mysqli;
-    $sql = "SELECT `project_id`, `title`, `amount`, DATE_FORMAT(`start_date`, '%d/%m/%Y') `start_date`,  DATE_FORMAT(`end_date`, '%d/%m/%Y') `end_date`, `duration`, `executive_name`, `researchers`
+    $sql = "SELECT `project_id`, `title`, `amount`, DATE_FORMAT(`start_date`, '%d/%m/%Y') `start_date`,  DATE_FORMAT(`end_date`, '%d/%m/%Y') `end_date`, `duration`, `organization`, `manager`, `executive_name`, `researchers`
         FROM `project_view`
         WHERE $filter ";
     $result = $mysqli->query($sql);
@@ -196,7 +238,9 @@ function dataQuery($filter = 1) {
     if ($result->num_rows > 0) {
         //$count_results = $mysqli->countQuery($subquery, $filters);
         while($row = $result->fetch_assoc()) {
-            $data[] = $row;
+            $id = $row['project_id'];
+            unset($row['project_id']);
+            $data[$id] = $row;
         }
         return $data;
     }
@@ -214,9 +258,7 @@ function dataList($data) {
                 <th>Τίτλος</th>
                 <th>Ποσό</th>
                 <th>Διάρκεια</th>
-                <th>Στέλεχος</th>
-                <th>Ερευνητές</th>
-                <th></th>
+                <th>Πληροφορίες</th>
                 <th colspan="1">
                     <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="Προσθήκη έργου" 
                         data-content='{"form":"researcher","type":"insert"}'> 
@@ -225,30 +267,38 @@ function dataList($data) {
                 </th>
             </tr>
             </thead>    <?php
-            foreach ($data as $key => $row) {  ?>
+            foreach ($data as $key => $row) {
+                ob_start(); ?>
+                    <a class="element-details" data-name="researchersPerProject" data-id="<?php echo $key; ?>" href="javascript:void(0)">
+                        <?php echo $row['researchers']; ?>
+                    </a> <?php 
+                $researchers = ob_get_clean(); ?> 
                 <tr>
                     <td><?php echo $row['title']; ?></td>
                     <td><?php echo $row['amount']; ?></td>
                     <td><?php echo $row['start_date'].' '.$row['end_date'].' '.$row['duration'].' χρόν'.($row['duration'] == 1?'ος':'ια'); ?></td>
-                    <td><?php echo $row['executive_name']; ?></td>
                     <td>
-                        <a class="element-details" data-name="researchersPerProject" data-id="<?php echo $row['project_id']; ?>" href="javascript:void(0)">
-                            <?php echo $row['researchers']; ?>
-                        </a>
+                        <?php echo 'Οργανισμός:<br>'.$row['organization'].'<br>Yπεύθυνος:<br>'.$row['manager'].'<br>Στέλεχος:<br>'.$row['executive_name'].'<br>Ερευνητές: '.$researchers; ?>
                     </td>
-                    <td>
-                        <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Επεξεργασία έργου (id: '.$key.')'; ?>" 
-                            data-content='{"form":"project","type":"update","edit_id":"<?php echo $key; ?>"}' data-success="Η προσθήκη του έργου ολοκληρώθηκε."
-                            data-failure="Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά." class="">
-                            <?php echo $icon->edit; ?>
-                        </a>
+                    <td >
+                        <div class="d-flex flex-column">
+                            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open mb-4" title="<?php echo 'Προβολή έργου - Παραδοτέα'; ?>" 
+                                data-content='{"previw":"project","edit_id":"<?php echo $key; ?>"}'
+                                data-failure="Παρουσιάστηκε σφάλμα, παρακαλώ δοκιμάστε ξανά." class="">
+                                <?php echo $icon->boxArrow; ?>
+                            </a>
+                            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open mb-4" title="<?php echo 'Επεξεργασία έργου'; ?>" 
+                                data-content='{"form":"project","type":"update","edit_id":"<?php echo $key; ?>"}' data-success="Η προσθήκη του έργου ολοκληρώθηκε."
+                                data-failure="Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά." class="">
+                                <?php echo $icon->edit; ?>
+                            </a>
+                            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Διαγραφή έργου'; ?>" 
+                                data-content='{"form":"project","type":"delete","edit_id":"<?php echo $key; ?>"}'>
+                                <?php echo $icon->delete; ?>
+                            </a>
+                        <div>
                     </td>
-                    <td>
-                        <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Διαγραφή έργου (id: '.$key.')'; ?>" 
-                            data-content='{"form":"project","type":"delete","edit_id":"<?php echo $key; ?>"}'>
-                            <?php echo $icon->delete; ?>
-                        </a>
-                    </td>
+
                 </tr>    <?php
             }   ?>
             </tbody>
@@ -258,7 +308,7 @@ function dataList($data) {
         <div class="text-center mt-5">Δεν υπάρχουν αποτελέσματα</div>   <?php
     }
 }
-
+// -------------------- FORM --------------------
 
 function form($type, $data = NULL) {
     global $mysqli;
@@ -270,15 +320,7 @@ function form($type, $data = NULL) {
     $read_only = ['delete'=>'disabled'];
     $query = "SELECT `abbreviation`,`name` FROM `organization` ";
     $result = $mysqli->query($query);
-    $organization = [];
-    if ($result->num_rows > 0) {
-        // output data of each row
-        while($row = $result->fetch_assoc()) {
-            $organization[$row['abbreviation']] = $row['name'];
-        }
-    }
-    $query = "SELECT `abbreviation`,`name` FROM `organization` ";
-    $result = $mysqli->query($query);
+
     $organization = [];
     if ($result->num_rows > 0) {
         // output data of each row
@@ -387,4 +429,18 @@ function form($type, $data = NULL) {
         <input type="hidden" name="db" value="<?php echo $type; ?>" />
         <input type="hidden" name="edit_id" value="<?php echo $data['project_id'] ?? NULL; ?>" />
     </form>	<?php
+}
+
+function preview($project,$deliverable) {
+    //echo '<pre>'; print_r($project);print_r($deliverable);echo'</pre>';
+    ?>
+    <div class="container">
+        <h4><?php echo $project['title']; ?></h4>
+        <p><?php echo $project['summary']; ?></p>
+        <h4 class="my-4">Παραδοτέα</h4> <?php
+            foreach ($deliverable as $key => $row) { ?>
+                <h5><?php echo $row['deliverable_id'];?></h5>
+                <p><?php echo $row['summary'];?></p> <?php
+            } ?>
+    </div> <?php
 }
