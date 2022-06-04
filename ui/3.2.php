@@ -60,7 +60,6 @@ if ($result->num_rows > 0) {
                 <th>Έργα</th>
             </tr>
             </thead>    <?php
-            
             foreach ($data as $key => $row) {
                     listItem($key, $row);
             }   ?>
@@ -77,7 +76,7 @@ function listItem($key, $row) {
         <td><?php echo $row['full_name']; ?></td>
         <td><?php echo $row['organization']; ?></td>
         <td>
-            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Επεξεργασία ερευνητή (id: '.$key.')'; ?>" 
+            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Έργα ερευνητή (id: '.$key.')'; ?>" 
                 data-content='{"previw":"projectresearcher","edit_id":"<?php echo $key; ?>"}'
                 data-failure="Παρουσιάστηκε σγάλμα, παρακαλώ δοκιμάστε ξανά." class="">
                 <?php echo $icon->boxArrow; ?>
@@ -91,7 +90,6 @@ function preview($project) {
     ?>
     <div class="container"> <?php
         if(!empty($project)) { ?>
-            <h3 class="my-4">Έργα ερευνητή</h3>
             <ol> <?php
                 foreach ($project as $key => $title) { ?>
                     <li><?php echo $title;?></li> <?php
