@@ -157,9 +157,6 @@ CREATE TABLE evaluates (
 	CONSTRAINT fk_evaluates_researcher FOREIGN KEY (researcher_id)
 		REFERENCES researcher (researcher_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
--- ----------------------------------------
--- Create View 3 for the ELIDEK database --
--- ----------------------------------------
 
 
 -- ----------------------------------------
@@ -167,7 +164,6 @@ CREATE TABLE evaluates (
 -- ----------------------------------------
 
 use elidek;
--- not sure it's what we want.
 
 DROP VIEW IF EXISTS `projectresearcher_vw`;
 CREATE VIEW `projectresearcher_vw` AS
@@ -179,6 +175,16 @@ JOIN `researcher` `r`
 ON `w`.`researcher_id` = `r`.`researcher_id` 
 JOIN `organization` `o` 
 ON `r`.`abbreviation` = `o`.`abbreviation`; 
+
+-- ----------------------------------------
+-- Create View 2 for the ELIDEK database --
+-- ----------------------------------------
+
+DROP VIEW IF EXISTS `eval_view`;
+CREATE VIEW `eval_view` AS 
+SELECT `e`.`rating`, `e`.`eval_date`, `e`.`researcher_id`, `p`.`project_id`, `p`.`title`, `p`.`abbreviation`
+FROM `evaluates` `e`
+INNER JOIN `project` `p` ON `e`.`project_id` = `p`.`project_id`;
 
 -- ----------------------------------------
 -- Create View 3: project for the ELIDEK database --
@@ -200,6 +206,8 @@ ON `p`.`project_id` = `f`.`project_id`
 JOIN `organization` `o`
 ON `p`.`abbreviation` = `o`.`abbreviation`
 GROUP BY `p`.`project_id`;
+
+
 
 
 -- --------------------

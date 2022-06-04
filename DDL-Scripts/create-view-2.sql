@@ -3,15 +3,11 @@
 -- ----------------------------------------
 
 use elidek;
--- projects per organization
+-- Evaluations of projects
 
-CREATE VIEW researchers_per_organization_vw AS
-SELECT DISTINCT 
-O.name, O.abbreviation, R.researcher_id,
-concat(R.first_name,' ',R.last_name) AS full_name, 
-DATE_FORMAT(FROM_DAYS(DATEDIFF(now(),R.birth_date)), '%Y')+0  AS age, R.gender
-FROM organization O
-INNER JOIN WorksFor W 
-ON O.abbreviation = W.abbreviation 
-INNER JOIN researcher R
-ON W.researcher_id = R.researcher_id
+DROP VIEW IF EXISTS `eval_view`;
+
+CREATE VIEW `eval_view` AS 
+SELECT `e`.`rating`, `e`.`eval_date`, `e`.`researcher_id`, `p`.`project_id`, `p`.`title`, `p`.`abbreviation`
+FROM `evaluates` `e`
+INNER JOIN `project` `p` ON `e`.`project_id` = `p`.`project_id`;
