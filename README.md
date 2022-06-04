@@ -59,4 +59,6 @@ We based our database on the provided Entity-Relationship diagram.
 
 ![relational-diagram](https://user-images.githubusercontent.com/62358292/171855701-8056b0ec-985a-40ca-83a4-62c9870b2f24.png)
 
+## Preview
+![image](https://user-images.githubusercontent.com/62358292/172023949-9c32323f-ad0b-40f3-81fb-e5d90e1f4f6c.png)
 
