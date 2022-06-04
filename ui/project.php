@@ -10,7 +10,7 @@ if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'project' && in_ar
 	$data = [];
 	if(isset($_POST['edit_id']) && is_numeric($_POST['edit_id'])) {
 		$edit_id = $mysqli->real_escape_string($_POST['edit_id']);
-		$query = "	SELECT `project_id`,`title`,`amount`,DATE_FORMAT(`start_date`,'%d/%m/%Y') `start_date`,DATE_FORMAT(`end_date`,'%d/%m/%Y') `end_date`,`executive_id`,`executive_name`,`abbreviation`,`organization`,`manager_id`,`manager`,`field`
+		$query = "	SELECT `project_id`,`title`, `summary`,`amount`,DATE_FORMAT(`start_date`,'%d/%m/%Y') `start_date`,DATE_FORMAT(`end_date`,'%d/%m/%Y') `end_date`,`executive_id`,`executive_name`,`abbreviation`,`organization`,`manager_id`,`manager`,`field`
                     FROM `project_view`
 					WHERE `project_id` = '$edit_id' ";
 		//echo $query; exit;
@@ -22,6 +22,12 @@ if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'project' && in_ar
 	form($type, $data);
 	//echo $_SERVER['SERVER_ADDR'];
 	exit;
+}
+if(isset($_POST['project'], $_POST['id']) && $_POST['project'] == 'deliverable') {
+    $type = isset($_POST['type'])?$mysqli->real_escape_string($_POST['type']):'insert';
+    $edit_id = $mysqli->real_escape_string($_POST['id']);
+    deliverableInput($type,$edit_id);
+    exit;
 }
 
 // PREVIEW
@@ -300,6 +306,7 @@ function form($type, $data = NULL) {
     $failure = ['insert'=>'Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά.', 'update'=>'Η ενημέρωση των στοιχείων απέτυχε, παρακαλώ δοκιμάστε ξανά.', 'delete'=>'Η διαγραφή απέτυχε, παρακαλώ δοκιμάστε ξανά.'];
     $read_only = ['delete'=>'disabled'];
 
+    $project_id = $data['project_id'];
     $organization = [];
     $query = "SELECT `abbreviation`,`name` FROM `organization` ";
     $result = $mysqli->query($query);
@@ -331,7 +338,6 @@ function form($type, $data = NULL) {
             $executive[$row['executive_id']] = $row['name'];
         }
     }
-
     $field = [];
     $query = "SELECT `field_id`,`field_name` FROM `field` ";
     $result = $mysqli->query($query);
@@ -340,12 +346,35 @@ function form($type, $data = NULL) {
         while($row = $result->fetch_assoc()) {
             $field[$row['field_id']] = $row['field_name'];
         }
+    }
+    $workson = [];
+    $query = "SELECT `researcher_id` FROM `WorksOn` WHERE `project_id` = $project_id ";
+    $result = $mysqli->query($query);
+    if ($result->num_rows > 0) {
+        // output data of each row
+        while($row = $result->fetch_assoc()) {
+            $workson[] = $row['researcher_id'];
+        }
+    }
+    $deliverable = [];
+    $query = "SELECT `project_id`, `deliverable_id` `title`, `summary` FROM `deliverable` WHERE `project_id` = $project_id ";
+    $result = $mysqli->query($query);
+    if ($result->num_rows > 0) {
+        // output data of each row
+        while($row = $result->fetch_assoc()) {
+            $deliverable[] = $row;
+        }
     } ?>
-    <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" class="<?php echo $type; ?>" method="POST" data-item="project">
+    <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" class="<?php echo $type; ?>" method="POST" data-item="project" data-type="<?php echo $type; ?>">
         <div class="container d-flex flex-column">
             <div class="input-field">
                 <input type="text" class="form-control" id="project_title" name="project[title]" required value="<?php echo $data['title'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?> >
                 <label for="project_title" class="form-label">Τίτλος<span class="text-danger">&nbsp;*</span></label>
+                <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+            </div>
+            <div class="input-field">
+                <textarea class="form-control" id="project_summary" rows="3" name="project[summary]" required <?php echo $read_only[$type]??''; ?> ><?php echo $data['summary'] ?? ''; ?></textarea>
+                <label for="project_summary" class="form-label">Περίληψη<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field">
@@ -359,12 +388,12 @@ function form($type, $data = NULL) {
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field">
-                <input type="text" id="project_start_date" class="form-control datepicker calendar" name="project[end_date]" required value="<?php echo $data['end_date'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?>>
-                <label for="project_start_date" class="form-label">Λήξη<span class="text-danger">&nbsp;*</span></label>
+                <input type="text" id="project_end_date" class="form-control datepicker calendar" name="project[end_date]" required value="<?php echo $data['end_date'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?>>
+                <label for="project_end_date" class="form-label">Λήξη<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
-                <select class="selectpicker select-organization form-control" name="project[organization]" id="project_organization" title="Χωρίς επιλογή" required data-live-search="true" >	<?php
+                <select class="selectpicker select-organization form-control" name="project[organization]" id="project_organization" title="Χωρίς επιλογή" required data-live-search="true" <?php echo $read_only[$type]??''; ?> >	<?php
                     foreach($organization as $abbreviation => $name) {	?>
                         <option value="<?php echo $abbreviation; ?>" <?php echo isset($data['abbreviation']) && $data['abbreviation'] == $abbreviation ? 'selected' : '';?> >
                             <?php echo $name; ?>
@@ -375,39 +404,59 @@ function form($type, $data = NULL) {
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
-                <select class="selectpicker select-organization form-control" name="project[abbreviation]" id="researcher_organization" title="Χωρίς επιλογή" required required data-live-search="true" >	<?php
+                <select class="selectpicker select-manager form-control" name="project[manager]" id="project-manager" title="Χωρίς επιλογή" required required data-live-search="true" <?php echo $read_only[$type]??''; ?> >	<?php
                     foreach($researcher as $id => $name) {	?>
                         <option value="<?php echo $id; ?>" <?php echo isset($data['manager_id']) && $data['manager_id'] == $id ? 'selected' : '';?> >
                             <?php echo $name; ?>
                         </option>	<?php
                     }	?>
 				</select>
-                <label for="researcher_organization" class="form-label">Επιστημονικός υπεύθυνος<span class="text-danger">&nbsp;*</span></label>
+                <label for="project-manager" class="form-label">Επιστημονικός υπεύθυνος<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
-                <select class="selectpicker select-organization form-control" name="project[abbreviation]" id="researcher_organization" title="Χωρίς επιλογή" required required data-live-search="true" >	<?php
+                <select class="selectpicker select-executive form-control" name="project[executive]" id="project_executive" title="Χωρίς επιλογή" required required data-live-search="true" <?php echo $read_only[$type]??''; ?> >	<?php
                     foreach($executive as $id => $name) {	?>
                         <option value="<?php echo $id; ?>" <?php echo isset($data['executive_id']) && $data['executive_id'] == $id ? 'selected' : '';?> >
                             <?php echo $name; ?>
                         </option>	<?php
                     }	?>
 				</select>
-                <label for="researcher_organization" class="form-label">Στέλεχος διαχείρισης<span class="text-danger">&nbsp;*</span></label>
+                <label for="project_executive" class="form-label">Στέλεχος διαχείρισης<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
-                <select class="selectpicker select-organization form-control" multiple name="project[abbreviation]" id="researcher_organization" title="Χωρίς επιλογή" required >	<?php
+                <select class="selectpicker select-filed form-control" multiple name="project[field]" id="project_field" title="Χωρίς επιλογή" required <?php echo $read_only[$type]??''; ?> >	<?php
                     foreach($field as $id => $name) {	?>
                         <option value="<?php echo $id; ?>" <?php echo isset($data['field']) && in_array($id, explode(',',$data['field'])) ? 'selected' : '';?> >
                             <?php echo $name; ?>
                         </option>	<?php
                     }	?>
 				</select>
-                <label for="researcher_organization" class="form-label">Επιστημονικά πεδία<span class="text-danger">&nbsp;*</span></label>
+                <label for="project_field" class="form-label">Επιστημονικά πεδία<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
-            <?php
+            <div class="input-field" >
+                <select class="selectpicker select-researcher form-control" multiple data-live-search="true" name="project[researcher]" id="project_researcher" title="Χωρίς επιλογή" required <?php echo $read_only[$type]??''; ?> >	<?php
+                    foreach($researcher as $id => $name) {	?>
+                        <option value="<?php echo $id; ?>" <?php echo in_array($id, $workson) ? 'selected' : '';?> >
+                            <?php echo $name; ?>
+                        </option>	<?php
+                    }	?>
+				</select>
+                <label for="project_researcher" class="form-label">Ερευνητές<span class="text-danger">&nbsp;*</span></label>
+                <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+            </div> <?php
+            if(!empty($deliverable)) {
+                foreach ($deliverable as $row) {
+                    deliverableInput($type, $row );
+                }
+            } ?>
+            <a href="javascript:void(0)" class="btn btn-light add-deliverable" title="<?php echo 'Προσθήκη παραδοτέου (id: '.($project_id??'').')'; ?>" 
+                data-project="deliverable" data-id="<?php echo $project_id??''; ?>" >
+                Προσθήκη παραδοτέου
+            </a> <?php
+
             if(isset($message[$type])) { ?>
                 <p>	<?php
                     echo $message[$type]; ?>
@@ -423,6 +472,26 @@ function form($type, $data = NULL) {
         <input type="hidden" name="db" value="<?php echo $type; ?>" />
         <input type="hidden" name="edit_id" value="<?php echo $data['project_id'] ?? NULL; ?>" />
     </form>	<?php
+}
+function deliverableInput($type, $row = NULL) {
+    global $icon;
+    $read_only = ['delete'=>'disabled']; ?>
+        <div class="deliverable-group border mb-3 px-4 py-2">
+            <h6>Παραδοτέο</h6>
+            <div class="input-field input-group ps-0 w-100">
+                <input type="text" class="form-control" id="organization_phone" name="organization__phone[]" required value="<?php echo $row['title']; ?>" <?php echo @$read_only[$type]??''; ?> >
+                <label for="organization_phone" class="form-label">Τίτλος<span class="text-danger">&nbsp;*</span></label>
+                <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+                <button class="btn btn-outline-secondary remove-deliverable" type="button" data-project="deliverable">
+                    <?php echo $icon->delete; ?>
+                </button>
+            </div>
+            <div class="input-field ps-0 w-100">
+                <textarea class="form-control" id="project_summary" rows="3" name="project[summary]" required <?php echo $read_only[$type]??''; ?> ><?php echo $row['summary'] ?? ''; ?></textarea>
+                <label for="project_summary" class="form-label">Περίληψη<span class="text-danger">&nbsp;*</span></label>
+                <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+            </div>
+        </div> <?php
 }
 
 function preview($project,$deliverable) {

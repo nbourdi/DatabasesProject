@@ -25,7 +25,7 @@ buttons = {
 function dateTimePicker() {
 
 	$('.datepicker.calendar').datepicker({
-		format: 'dd/mm/yy',
+		format: 'dd/mm/yyyy',
 		language: 'el',
 		changeMonth: true,
         changeYear: true,
@@ -34,7 +34,7 @@ function dateTimePicker() {
     });
 
 	$('.datepicker.birthday').datepicker({
-		format: 'dd/mm/yy',
+		format: 'dd/mm/yyyy',
 		language: 'el',
 		changeMonth: true,
         changeYear: true,
@@ -45,7 +45,7 @@ function dateTimePicker() {
 		$(e.target).addClass('has-value');
     });
 	$('.datepicker.since-date').datepicker({
-		format: 'dd/mm/yy',
+		format: 'dd/mm/yyyy',
 		language: 'el',
 		changeMonth: true,
         changeYear: true,
@@ -523,5 +523,31 @@ $(document).ready(function(){
 			object.closest('.input-field.input-group').slideUp();
 		});
 
+	});
 
+	//----------------------------- project form -----------------------------
+
+	$(document).ready(function(){
+		// add deliverable
+		$('body').on('click', '.add-deliverable[data-project=deliverable]', function(e){
+			e.preventDefault();
+			var object = $(this),
+			id = object.data('id'),
+			form = object.closest('form'),
+			type = form.data('type');
+			var input = $.ajax({
+				url: form.attr('action'),
+				type: 'POST',
+				data: $.param({project: 'deliverable', id: id, type: type}),
+				dataType: 'html',
+				async: false}).responseText;
+			//console.error(itemUpdate);
+			$(input).insertBefore(object).hide().show('slow');
+		});
+		// remove deliverable
+		$('body').on('click', '.remove-deliverable[data-project=deliverable]', function(e){
+			e.preventDefault();
+			var object = $(this);
+			object.closest('.deliverable-group').slideUp();
+		});
 	});

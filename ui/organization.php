@@ -34,6 +34,18 @@ if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'organization' && 
 	form($type,$organization,$phone);
 	exit;
 }
+if(isset($_POST['organization'], $_POST['abbreviation']) && in_array($_POST['organization'], ['uni','inst','co']) && $_POST['abbreviation'] != '') {
+    $type = isset($_POST['type'])?$mysqli->real_escape_string($_POST['type']):'insert';
+    $orgType = $mysqli->real_escape_string($_POST['organization']);
+    budgetInput($type,$orgType);
+    exit;
+}
+if(isset($_POST['organization'], $_POST['abbreviation']) && $_POST['organization'] == 'phone') {
+    $type = isset($_POST['type'])?$mysqli->real_escape_string($_POST['type']):'insert';
+    $abbreviation = $mysqli->real_escape_string($_POST['abbreviation']);
+    phoneInput($type,$abbreviation);
+    exit;
+}
 
 // DISPLAY POPOVER WITH BADGET
 if(isset($_POST['elementDetails'], $_POST['elementId']) && $_POST['elementDetails'] == 'budget' && $_POST['elementId'] != '') {
@@ -69,21 +81,6 @@ if(isset($_POST['elementDetails'], $_POST['elementId']) && $_POST['elementDetail
             echo $row['phone'].'<br>';
         }
     }
-    exit;
-}
-
-
-if(isset($_POST['organization'], $_POST['abbreviation']) && in_array($_POST['organization'], ['uni','inst','co']) && $_POST['abbreviation'] != '') {
-    $type = isset($_POST['type'])?$mysqli->real_escape_string($_POST['type']):'insert';
-    $orgType = $mysqli->real_escape_string($_POST['organization']);
-    budgetInput($type,$orgType);
-    exit;
-}
-
-if(isset($_POST['organization'], $_POST['abbreviation']) && $_POST['organization'] == 'phone') {
-    $type = isset($_POST['type'])?$mysqli->real_escape_string($_POST['type']):'insert';
-    $abbreviation = $mysqli->real_escape_string($_POST['abbreviation']);
-    phoneInput($type,$abbreviation);
     exit;
 }
 
@@ -355,17 +352,16 @@ function form($type, $data = NULL, $phone=NULL) {
                 <label for="organization_city" class="form-label">Πόλη<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div> <?php
+            $phone = [];
             if(!empty($phone)) {
                 foreach ($phone as $value) {
-                    phoneInput($type, $data['abbreviation'], $value );
+                    phoneInput($type, @$data['abbreviation'], $value );
                 }
             } ?>
-            <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="btn btn-light add-phone" title="<?php echo 'Προσθήκη τηλεφώνου (id: '.($data['abbreviation']??'').')'; ?>" 
-                data-organization="phone" data-abbreviation="<?php echo $data['abbreviation']??''; ?>" >
-                Προσθήκη τηλεφώνου
-            </a>
-
-            <?php
+            <a href="javascript:void(0)" class="btn btn-light add-phone" title="<?php echo 'Προσθήκη τηλεφώνου (id: '.(@$data['abbreviation']??'').')'; ?>" 
+                data-organization="phone" data-abbreviation="<?php echo @$data['abbreviation']??''; ?>" >
+                Προσθήκη παραδοτέου
+            </a> <?php
             if(isset($message[$type])) { ?>
                 <p>	<?php
                     echo $message[$type]; ?>

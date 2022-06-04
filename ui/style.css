@@ -5,7 +5,8 @@
 .form-control:focus {box-shadow:none;}
 .form-control ~ label {position:absolute;pointer-events: none;left:.75rem;top:.75rem;transition:top .5s;z-index: 3;}
 .form-control.has-value ~ label,
-.form-control:focus ~ label {font-size:.8rem;top:0;}
+.form-control:focus ~ label {top:.25rem;font-size:.8rem;line-height: 1;}
+form:not(.delete) .input-field>label{ background: #fff}
 label.btn {box-shadow:none!important;}
 
 .btn-close:focus {
@@ -26,6 +27,10 @@ select.selectpicker + .dropdown-toggle {
     border: 1px solid #ced4da;
 	box-shadow: none;
 	outline: none;
+}
+
+.dropdown.bootstrap-select.disabled {
+	background: #c9d0d7;
 }
 .bootstrap-select .dropdown-toggle:focus, .bootstrap-select>select.mobile-device:focus+.dropdown-toggle {
 	box-shadow: none;
