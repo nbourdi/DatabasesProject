@@ -82,7 +82,7 @@ if(isset($_POST['organization'], $_POST['abbreviation']) && in_array($_POST['org
 
 if(isset($_POST['organization'], $_POST['abbreviation']) && $_POST['organization'] == 'phone') {
     $type = isset($_POST['type'])?$mysqli->real_escape_string($_POST['type']):'insert';
-    $abbreviation = $mysqli->real_escape_string($_POST['edit_id']);
+    $abbreviation = $mysqli->real_escape_string($_POST['abbreviation']);
     phoneInput($type,$abbreviation);
     exit;
 }
@@ -96,6 +96,8 @@ if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) 
 	$action = $mysqli->real_escape_string($_POST['db']);
 	$query = '';
 	$abbreviation = NULL;
+    //START TRANSACTION
+    $mysqli->autocommit(FALSE);
 	if($action == 'insert' && isset($_POST['organization']) && is_array($_POST['organization'])) {
 		$abbreviation = $_POST['organization']['abbreviation'];
         $columns = [];
@@ -137,12 +139,32 @@ if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) 
 		$query = "	DELETE FROM `organization`
 					WHERE `abbreviation` = '$abbreviation' ";
 	}
+    $condition = $mysqli->query($query);
+
+    if(isset($_POST['organization__phone']) && in_array($_POST['db'], ['insert','update'])) {
+        $queryDeletePhone = "	DELETE FROM `organization__phone`
+                                WHERE `abbreviation` = '$abbreviation' ";
+        $condition = $condition && $mysqli->query($queryDeletePhone);
+        $values = [];
+        foreach($_POST['organization__phone'] as $phone) {
+            $value = $mysqli->real_escape_string($value);
+            $values[] = "('$phone', '$abbreviation')";
+        }
+        $values = implode(',',$values);
+        $queryInsertPhone = "INSERT INTO `organization__phone` (`phone`,`abbreviation`) VALUES $values;";
+        $condition = $condition && $mysqli->query($queryInsertPhone);
+    }
+
 	//echo '###'.$query;exit;
-	if($mysqli->query($query))
+	if($condition && $mysqli->commit())
 		echo json_encode(['status'=>'success', 'action'=>$action, 'edit_id'=>$abbreviation ]);
-	else
+	else {
+        $mysqli->rollback();
 		echo json_encode(['status'=>'failure']);
+    }
 	//echo '<pre>';print_r($fields);echo '</pre>';
+    //END TRANSACTION
+    $mysqli->autocommit(TRUE);
 	exit;
 }
 
@@ -230,7 +252,6 @@ if ($result->num_rows > 0) {
             </tbody>
         </table>
     </div>    <?php
-
 
 
 $conf->footer();
@@ -396,7 +417,8 @@ function budgetInput($type, $orgType,$budget = NULL) {
 }
 
 function phoneInput($type, $abbreviation, $phone = NULL) {
-    global $icon; ?>
+    global $icon;
+    $read_only = ['delete'=>'disabled']; ?>
     <div class="input-field input-group">
         <input type="text" class="form-control" id="organization_phone" name="organization__phone[]" required value="<?php echo $phone; ?>" <?php echo @$read_only[$type]??''; ?> >
         <label for="organization_phone" class="form-label">Τηλέφωνο<span class="text-danger">&nbsp;*</span></label>
