@@ -254,7 +254,14 @@ DELETE FROM FieldProject;
 INSERT INTO organization (abbreviation, name, type, budget, street, street_number, postal_code, city) VALUES 
 
 -- unis:12
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> ca64c204924fc854461ba77b718318f7a1b77a3a
+>>>>>>> f567f139db9676ab24a316c745fbaac94db357ca
 ('UOI', 'Πανεπιστήμιο Ιωαννίνων', 'uni', '{"ministry":"104000"}', 'Λεωφόρος Σταύρου Νιάρχου', '60', '45500','Ιωάννινα'),
 ('UOA', 'Εθνικό και Καποδιστριακό Πανεπιστήμιο Αθηνών', 'uni','{"ministry":"150000"}','Υμηττού', '5', '15772', 'Ζωγράφου'),
 ('UOP', 'Πανεπιστήμιο Πατρών', 'uni','{"ministry":"107850"}', 'Πανεπιστημιούπολη', NULL , '26504', 'Πάτρα'),
