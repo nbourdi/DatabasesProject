@@ -107,20 +107,6 @@ if(isset($_POST['elementDetails'], $_POST['elementId']) && $_POST['elementDetail
     exit;
 }
 
-// SUMMARY -----------------------
-if(isset($_POST['elementDetails'], $_POST['elementId']) && $_POST['elementDetails'] == 'projectSummary' && is_numeric($_POST['elementId'])) {
-    $project = $mysqli->real_escape_string($_POST['elementId']);
-    $sql = "SELECT `summary`
-            FROM `project`
-            WHERE `project_id` = $project ";
-    $result = $mysqli->query($sql);
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        echo $row['summary'];
-    }
-    exit;
-}
-
 
 $conf->header('ΕΛΙΔΕΚ - Έργα / Επιχορηγήσεις');
 $conf->menu($active = basename(__FILE__, '.php'));
