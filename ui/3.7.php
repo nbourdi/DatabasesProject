@@ -20,7 +20,7 @@ $query = " SELECT * FROM (
             ORDER BY p.amount DESC
             LIMIT 5
             ) `t` 
-            GROUP BY `full_name`
+            GROUP BY `id`
             ORDER BY amount DESC; ";
 
 $result = $mysqli->query($query);
