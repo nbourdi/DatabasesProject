@@ -279,6 +279,22 @@ function budgetInput($type,$budget = NULL) {
 }
 
 function phoneInput($abbreviation, $phone = NULL) { ?>
+
+<div class="input-group mb-3">
+  <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2">
+  <button class="btn btn-outline-secondary" type="button" id="button-addon2">Button</button>
+</div>
+
+
+
+
+<div class="input-field input-group">
+        <input type="text" class="form-control" id="organization_phone" name="organization__phone[][phone]" required value="<?php echo $phone; ?>" <?php echo @$read_only[$type]??''; ?> >
+        <label for="organization_phone" class="form-label">Τηλέφωνο<span class="text-danger">&nbsp;*</span></label>
+        <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+        <button class="btn btn-outline-secondary" type="button" id="button-addon2">Button</button>
+    </div>
+
     <div class="input-field">
         <input type="text" class="form-control" id="organization_phone" name="organization__phone[][phone]" required value="<?php echo $phone; ?>" <?php echo @$read_only[$type]??''; ?> >
         <label for="organization_phone" class="form-label">Τηλέφωνο<span class="text-danger">&nbsp;*</span></label>
