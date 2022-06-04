@@ -474,14 +474,15 @@ $(document).ready(function(){
 			e.preventDefault();
 			var object = $(this).children('input[type="radio"][name="organization[type]"]:checked'),
 			form = object.closest('form'),
-			type = object.val();
+			type = form.data('type'),
+			orgType = object.val();
 			form.find('.organization-budget').each(function() {
 				$(this).parent().slideUp();
 			});
 			var input = $.ajax({
 				url: form.attr('action'),
 				type: 'POST',
-				data: $.param({organization: type, abbreviation: 0}),
+				data: $.param({type: type, organization: orgType, abbreviation: 0}),
 				dataType: 'html',
 				async: false}).responseText;
 			//console.error(itemUpdate);
@@ -493,13 +494,14 @@ $(document).ready(function(){
 			e.preventDefault();
 			var object = $(this),
 			abbreviation = object.data('abbreviation'),
-			form = object.closest('form');
+			form = object.closest('form'),
+			type = form.data('type');
 			//alert(abbreviation)
 
 			var input = $.ajax({
 				url: form.attr('action'),
 				type: 'POST',
-				data: $.param({organization: 'phone', abbreviation: abbreviation}),
+				data: $.param({organization: 'phone', abbreviation: abbreviation, type: type}),
 				dataType: 'html',
 				async: false}).responseText;
 			//console.error(itemUpdate);
