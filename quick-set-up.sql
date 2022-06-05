@@ -84,7 +84,7 @@ CREATE TABLE project (
     CONSTRAINT fk_project_manager FOREIGN KEY (researcher_id)
 		REFERENCES researcher (researcher_id) ON DELETE RESTRICT ON UPDATE CASCADE,
 	CONSTRAINT fk_project_organization FOREIGN KEY (abbreviation)
-		REFERENCES organization (abbreviation) ON DELETE RESTRICT ON UPDATE CASCADE,
+		REFERENCES organization (abbreviation) ON DELETE CASCADE ON UPDATE CASCADE,
 	CONSTRAINT fk_project_executive FOREIGN KEY (executive_id)
 		REFERENCES executive (executive_id) ON DELETE RESTRICT ON UPDATE CASCADE,
 	CONSTRAINT fk_project_program FOREIGN KEY (program_id)
