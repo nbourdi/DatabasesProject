@@ -10,7 +10,8 @@ if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'project' && in_ar
 	$data = [];
 	if(isset($_POST['edit_id']) && is_numeric($_POST['edit_id'])) {
 		$edit_id = $mysqli->real_escape_string($_POST['edit_id']);
-		$query = "	SELECT `p`.`project_id`,`p`.`title`,`p`.`summary`,`p`.`amount`, DATE_FORMAT(`p`.`start_date`,'%d/%m/%Y') `start_date`,DATE_FORMAT(`p`.`end_date`,'%d/%m/%Y') `end_date`,`p`.`executive_id`,`p`.`executive_name`,`p`.`abbreviation`, `p`.`organization`,`p`.`manager_id`,`p`.`manager`,`p`.`field`,
+		$query = "	SELECT `p`.`project_id`,`p`.`title`,`p`.`summary`,`p`.`amount`, DATE_FORMAT(`p`.`start_date`,'%d/%m/%Y') `start_date`,DATE_FORMAT(`p`.`end_date`,'%d/%m/%Y') `end_date`,
+                    `p`.`program_id`,`p`.`executive_id`,`p`.`executive_name`,`p`.`abbreviation`, `p`.`organization`,`p`.`manager_id`,`p`.`manager`,`p`.`field`,
                     `e`.rating,DATE_FORMAT(`e`.`eval_date`,'%d/%m/%Y')`eval_date`,`e`.`researcher_id` `evaluate_id`
                     FROM `project_view` `p`
                     JOIN `eval_view` `e`
@@ -29,8 +30,89 @@ if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'project' && in_ar
 if(isset($_POST['project'], $_POST['id']) && $_POST['project'] == 'deliverable') {
     $type = isset($_POST['type'])?$mysqli->real_escape_string($_POST['type']):'insert';
     $edit_id = $mysqli->real_escape_string($_POST['id']);
-    deliverableInput($type,$edit_id);
+    deliverableInput($type,['project_id'=>$edit_id]);
     exit;
+}
+
+// INSERT OR UPDATE OR DELETE TO DB
+if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) {
+    
+	echo '<pre>';print_r($_POST);echo '</pre>';exit;
+	$action = $mysqli->real_escape_string($_POST['db']);
+	$query = '';
+	$abbreviation = NULL;
+    //START TRANSACTION
+    $mysqli->autocommit(FALSE);
+	if($action == 'insert' && isset($_POST['organization']) && is_array($_POST['organization'])) {
+		$abbreviation = $_POST['organization']['abbreviation'];
+        $columns = [];
+		$values = [];
+		foreach($_POST['organization'] as $column => $value) {
+			$column = $mysqli->real_escape_string($column);
+			if(in_array($column, ['abbreviation','name','type','budget','street','street_number','postal_code','city'])) {
+				$columns[] = "`$column`";
+                if($conf->isDate($value))
+                    $value = $conf->dateToDb($value);
+				$value = $mysqli->real_escape_string($value);
+				$values[] = "'$value'";
+			}
+		}
+		$columns = implode(',',$columns);
+		$values = implode(',',$values);
+		$query = "INSERT INTO `organization` ($columns) VALUES ($values);";
+	}
+	else if($action == 'update' && isset($_POST['edit_id'], $_POST['organization']) && $_POST['edit_id'] && is_array($_POST['organization'])) {
+		$abbreviation = $mysqli->real_escape_string($_POST['edit_id']);
+		$fields = [];
+		foreach($_POST['organization'] as $column => $value) {
+			$column = $mysqli->real_escape_string($column);
+			if(in_array($column, ['abbreviation','name','type','budget','street','street_number','postal_code','city'])) {
+                if($conf->isDate($value))
+                    $value = $conf->dateToDb($value);
+				$value = $mysqli->real_escape_string($value);
+				$fields[] = "`$column` = '$value'";
+			}
+		}
+		$fields = implode(',',$fields);
+		$query = "	UPDATE `organization`
+                    SET $fields
+                    WHERE `abbreviation` = '$abbreviation' ";
+	}
+	else if($action == 'delete' && isset($_POST['edit_id']) && $_POST['edit_id']) {
+		$abbreviation = $mysqli->real_escape_string($_POST['edit_id']);
+		$fields = [];
+		$query = "	DELETE FROM `organization`
+					WHERE `abbreviation` = '$abbreviation' ";
+	}
+    $condition = $mysqli->query($query);
+
+    if(isset($_POST['organization__phone']) && in_array($_POST['db'], ['insert','update'])) {
+        $queryDeletePhone = "	DELETE FROM `organization__phone`
+                                WHERE `abbreviation` = '$abbreviation' ";
+        $condition = $condition && $mysqli->query($queryDeletePhone);
+        $values = [];
+        foreach($_POST['organization__phone'] as $phone) {
+            if($value) {
+                $value = $mysqli->real_escape_string($value);
+                $values[] = "('$phone', '$abbreviation')";
+            }
+        }
+        $values = implode(',',$values);
+        $queryInsertPhone = "INSERT INTO `organization__phone` (`phone`,`abbreviation`) VALUES $values;";
+        $condition = $condition && $mysqli->query($queryInsertPhone);
+    }
+
+	//echo '###'.$query;exit;
+	if($condition && $mysqli->commit())
+		echo json_encode(['status'=>'success', 'action'=>$action, 'edit_id'=>$abbreviation ]);
+	else {
+        $mysqli->rollback();
+		echo json_encode(['status'=>'failure']);
+    }
+	//echo '<pre>';print_r($fields);echo '</pre>';
+    //END TRANSACTION
+    $mysqli->autocommit(TRUE);
+	exit;
 }
 
 // PREVIEW
@@ -38,11 +120,13 @@ if(isset($_POST['previw'], $_POST['edit_id']) && $_POST['previw'] == 'project' &
     $edit_id = $mysqli->real_escape_string($_POST['edit_id']);
     $project = [];
     $query = "	SELECT  `p`.`project_id`,  `p`.`title`,  `p`.`summary`, GROUP_CONCAT(DISTINCT `f`.`field_name`) `field`,
-                `e`.rating,DATE_FORMAT(`e`.`eval_date`,'%d/%m/%Y')`eval_date`,`e`.`eval_name`
+                `pg`.`title` `program`,`e`.rating,DATE_FORMAT(`e`.`eval_date`,'%d/%m/%Y')`eval_date`,`e`.`eval_name`
                 FROM `project` `p`
                 NATURAL JOIN `FieldProject` `fp`
                 JOIN `field` `f`
                 ON `fp`.`field_id` = `f`.`field_id`
+                JOIN `program` `pg`
+                ON `p`.`program_id` = `pg`.`program_id`
                 JOIN `eval_view` `e`
                 ON `p`.`project_id` = `e`.`project_id`
                 WHERE  `p`.`project_id` = $edit_id
@@ -254,7 +338,7 @@ function dataList($data) {
                 <th>Πληροφορίες</th>
                 <th colspan="1">
                     <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="Προσθήκη έργου" 
-                        data-content='{"form":"researcher","type":"insert"}'> 
+                        data-content='{"form":"project","type":"insert"}'> 
                         <?php echo $icon->add; ?>
                     </a>
                 </th>
@@ -282,11 +366,11 @@ function dataList($data) {
                             </a>
                             <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open mb-4" title="<?php echo 'Επεξεργασία έργου'; ?>" 
                                 data-content='{"form":"project","type":"update","edit_id":"<?php echo $key; ?>"}' data-success="Η προσθήκη του έργου ολοκληρώθηκε."
-                                data-failure="Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά." data-modal-size="lg">
+                                data-failure="Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά." data-modal-size="md">
                                 <?php echo $icon->edit; ?>
                             </a>
                             <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Διαγραφή έργου'; ?>" 
-                                data-content='{"form":"project","type":"delete","edit_id":"<?php echo $key; ?>"}' data-modal-size="lg">
+                                data-content='{"form":"project","type":"delete","edit_id":"<?php echo $key; ?>"}' data-modal-size="md">
                                 <?php echo $icon->delete; ?>
                             </a>
                         <div>
@@ -312,7 +396,18 @@ function form($type, $data = NULL) {
     $failure = ['insert'=>'Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά.', 'update'=>'Η ενημέρωση των στοιχείων απέτυχε, παρακαλώ δοκιμάστε ξανά.', 'delete'=>'Η διαγραφή απέτυχε, παρακαλώ δοκιμάστε ξανά.'];
     $read_only = ['delete'=>'disabled'];
 
-    $project_id = $data['project_id'];
+    $project_id = $data['project_id']??0;
+
+    $program = [];
+    $query = "  SELECT `program_id`,`title` 
+                FROM `program` ";
+    $result = $mysqli->query($query);
+    if ($result->num_rows > 0) {
+        // output data of each row
+        while($row = $result->fetch_assoc()) {
+            $program[$row['program_id']] = $row['title'];
+        }
+    }
     $organization = [];
     $query = "  SELECT `abbreviation`,`name` 
                 FROM `organization` ";
@@ -334,7 +429,6 @@ function form($type, $data = NULL) {
             $researcher[$row['researcher_id']] = $row['name'];
         }
     }
-
     $executive = [];
     $query = "  SELECT `executive_id`, CONCAT(`last_name`, ' ', `first_name`) `name`
                 FROM `executive` ; ";
@@ -389,7 +483,8 @@ function form($type, $data = NULL) {
         while($row = $result->fetch_assoc()) {
             $evaluates[$row['researcher_id']] = $row['name'];
         }
-    } ?>
+    }
+    //echo '<pre>'; print_r($program);echo'</pre>'; ?>
     <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" class="<?php echo $type; ?>" method="POST" data-item="project" data-type="<?php echo $type; ?>">
         <div class="container d-flex flex-column">
             <div class="input-field">
@@ -415,6 +510,17 @@ function form($type, $data = NULL) {
             <div class="input-field">
                 <input type="text" id="project_end_date" class="form-control datepicker calendar" name="project[end_date]" required value="<?php echo $data['end_date'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?>>
                 <label for="project_end_date" class="form-label">Λήξη<span class="text-danger">&nbsp;*</span></label>
+                <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+            </div>
+            <div class="input-field" >
+                <select class="selectpicker select-program form-control" name="project[program_id]" id="project-program_id" title="Χωρίς επιλογή" required required <?php echo $read_only[$type]??''; ?> >	<?php
+                    foreach($program as $id => $name) {	?>
+                        <option value="<?php echo $id; ?>" <?php echo isset($data['program_id']) && $data['program_id'] == $id ? 'selected' : '';?> >
+                            <?php echo $name; ?>
+                        </option>	<?php
+                    }	?>
+				</select>
+                <label for="project-manager" class="form-label">Πρόγραμμα χρηματοδότησης<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
@@ -531,11 +637,12 @@ function form($type, $data = NULL) {
 }
 function deliverableInput($type, $row = NULL) {
     global $icon;
+    $rand = str_shuffle(time().rand(1000,9999));
     $read_only = ['delete'=>'disabled']; ?>
         <div class="deliverable-group border mb-3 px-4 py-2">
             <h6>Παραδοτέο</h6>
             <div class="input-field input-group ps-0 w-100">
-                <input type="text" class="form-control" id="organization_phone" name="organization__phone[]" required value="<?php echo $row['title']; ?>" <?php echo @$read_only[$type]??''; ?> >
+                <input type="text" class="form-control" id="organization_phone" name="deliverable[<?php echo $rand; ?>][deliverable_id]" required value="<?php echo $row['title']??''; ?>" <?php echo @$read_only[$type]??''; ?> >
                 <label for="organization_phone" class="form-label">Τίτλος<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
                 <button class="btn btn-outline-secondary remove-deliverable" type="button" data-project="deliverable">
@@ -543,7 +650,7 @@ function deliverableInput($type, $row = NULL) {
                 </button>
             </div>
             <div class="input-field ps-0 w-100">
-                <textarea class="form-control" id="project_summary" rows="3" name="project[summary]" required <?php echo $read_only[$type]??''; ?> ><?php echo $row['summary'] ?? ''; ?></textarea>
+                <textarea class="form-control" id="project_summary" rows="3" name="deliverable[<?php echo $rand; ?>][summary]" required <?php echo $read_only[$type]??''; ?> ><?php echo $row['summary']??''; ?></textarea>
                 <label for="project_summary" class="form-label">Περίληψη<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
@@ -553,9 +660,12 @@ function deliverableInput($type, $row = NULL) {
 function preview($project,$deliverable) {
     //echo '<pre>'; print_r($project);print_r($deliverable);echo'</pre>'; ?>
     <div class="container">
-        <div class="w-100 d-flex justify-content-end">
+        <div class="w-100 d-flex justify-content-between mb-2">
+            <span class="badge bg-info text-dark">
+                <?php echo $project['program']; ?>
+            </span>
             <span class="badge bg-warning text-dark">
-                <?php echo 'Βαθμός: '.$project['rating'].' '.$project['eval_date'].' Αξιολογιτής: '.$project['eval_name']; ?>
+                <?php echo 'Βαθμός: '.$project['rating'].' '.$project['eval_date'].' Αξιολογητής: '.$project['eval_name']; ?>
             </span>
         </div>
         <h4><?php echo $project['title']; ?></h4>
