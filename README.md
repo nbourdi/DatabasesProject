@@ -10,7 +10,7 @@ This is a project for the ECE NTUA Databases course, spring semester 2021-2022.
 
 ## Dependencies
 
-- [MySQL](https://www.mysql.com/)
+- [MySQL (MariaDB)](https://www.mysql.com/)
 - [Apache](https://httpd.apache.org/)
 - [PHP](https://www.php.net/)
 
@@ -26,7 +26,7 @@ The above can be installed and configured either individually or as a stack.
 
 4. Set up the database with all initial mock data inserted.
 
-    Click the "Shell" button on the Control Panel and execute quick-set-up.
+    Click the "Shell" button on the Control Panel and execute quick-set-up.sql.
     
     
   ```
