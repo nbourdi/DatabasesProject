@@ -2,7 +2,6 @@
 -- Project Group 3
 -- Insertion of mock data
 
-
 --
 -- Delete data 
 --
@@ -19,6 +18,9 @@ DELETE FROM evaluates;
 DELETE FROM WorksOn;
 DELETE FROM FieldProject;
 
+-- ---------------------
+-- Insert Researchers --
+-- ---------------------
 
 -- ORGANIZATIONS
 
@@ -1916,9 +1918,8 @@ INSERT INTO WorksOn (researcher_id, project_id) VALUES
 ('43', '78'),
 ('43', '79'),
 ('43', '80'),
-('43', '81');
+('43', '81'),
 
-INSERT INTO WorksOn (researcher_id, project_id) VALUES 
 ('64', '1'), 
 ('65', '46'),
 ('66', '22'),
@@ -2001,8 +2002,8 @@ INSERT INTO WorksOn (researcher_id, project_id) VALUES
 ('138', '55'),
 ('139', '62'),
 ('140', '51'),
-('141', '65'),
-('142', '65'),
+('141', '64'),
+('142', '64'),
 ('143', '56'),
 ('144', '5'),
 ('145', '61'),
@@ -2016,6 +2017,7 @@ INSERT INTO WorksOn (researcher_id, project_id) VALUES
 ('153', '63'),
 ('154', '64'),
 ('155', '51'),
+
 ('156', '34'),
 ('157', '8'),
 ('158', '56'),
@@ -2028,7 +2030,8 @@ INSERT INTO WorksOn (researcher_id, project_id) VALUES
 ('165', '48'),
 ('166', '57'),
 ('167', '64'),
-('168', '15'),
+('168', '15');
+INSERT INTO WorksOn (researcher_id, project_id) VALUES 
 ('169', '60'),
 ('170', '14'),
 ('171', '10'),
@@ -2041,8 +2044,8 @@ INSERT INTO WorksOn (researcher_id, project_id) VALUES
 ('177', '40'),
 ('177', '27'),
 ('177', '37'),
-('177', '25'),
-('177', '41'),
+('177', '24'),
+('177', '26'),
 ('178', '51'),
 ('179', '64'),
 ('180', '62'),
@@ -2063,13 +2066,13 @@ INSERT INTO WorksOn (researcher_id, project_id) VALUES
 ('193', '3'),
 ('193', '6'),
 ('193', '40'),
-('193', '25'),
+('193', '36'),
 ('193', '27'),
 ('193', '37'),
 ('194', '41'),
 ('195', '45'),
 ('196', '14'),
-('197', '39'),
+('197', '37'),
 ('198', '30');
 
 INSERT INTO deliverable (deliverable_id, summary, project_id) VALUES
