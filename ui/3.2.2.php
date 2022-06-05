@@ -9,7 +9,7 @@ $mysqli = $conf->mysqli;
 $conf->header('ΕΛΙΔΕΚ - Αξιολογήσεις');
 $conf->menu($active = basename(__FILE__, '.php'));
 
-$query = " SELECT DISTINCT `project_id`, `title`, `abbreviation`, `eval_name`,  DATE_FORMAT(`eval_date`, '%d/%m/%Y') `eval_date`, `rating`
+$query = " SELECT DISTINCT `project_id`, `title`, `name`, `eval_name`,  DATE_FORMAT(`eval_date`, '%d/%m/%Y') `eval_date`, `rating`
             FROM `eval_view`  ";
 $result = $mysqli->query($query);
 $data = [];
@@ -67,7 +67,7 @@ function listItem($key, $row) {
     ?>
     <tr>
         <td><?php echo $row['title']; ?></td>
-        <td><?php echo $row['abbreviation']; ?></td>
+        <td><?php echo $row['name']; ?></td>
         <td><?php echo $row['rating']; ?></td>
         <td><?php echo $row['eval_date']; ?></td>
         <td><?php echo $row['eval_name']; ?></td>
