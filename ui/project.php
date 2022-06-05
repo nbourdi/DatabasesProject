@@ -37,74 +37,147 @@ if(isset($_POST['project'], $_POST['id']) && $_POST['project'] == 'deliverable')
 // INSERT OR UPDATE OR DELETE TO DB
 if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) {
     
-	echo '<pre>';print_r($_POST);echo '</pre>';exit;
+	//echo '<pre>';print_r($_POST);echo '</pre>';//exit;
 	$action = $mysqli->real_escape_string($_POST['db']);
-	$query = '';
-	$abbreviation = NULL;
+	$query_project = "";
+	$query_evaluates = "";
+	$project_id = 0;
     //START TRANSACTION
     $mysqli->autocommit(FALSE);
-	if($action == 'insert' && isset($_POST['organization']) && is_array($_POST['organization'])) {
-		$abbreviation = $_POST['organization']['abbreviation'];
-        $columns = [];
-		$values = [];
-		foreach($_POST['organization'] as $column => $value) {
-			$column = $mysqli->real_escape_string($column);
-			if(in_array($column, ['abbreviation','name','type','budget','street','street_number','postal_code','city'])) {
-				$columns[] = "`$column`";
-                if($conf->isDate($value))
-                    $value = $conf->dateToDb($value);
-				$value = $mysqli->real_escape_string($value);
-				$values[] = "'$value'";
-			}
-		}
-		$columns = implode(',',$columns);
-		$values = implode(',',$values);
-		$query = "INSERT INTO `organization` ($columns) VALUES ($values);";
+    // INSERT
+	if($action == 'insert') {
+        $project_id = $mysqli->real_escape_string($_POST['edit_id']);
+        if(isset($_POST['project']) && is_array($_POST['project'])) {
+            $columns = [];
+            $values = [];
+            foreach($_POST['project'] as $column => $value) {
+                $column = $mysqli->real_escape_string($column);
+                if(in_array($column, ['title','summary','amount','start_date','end_date','program_id','abbreviation','researcher_id','executive_id'])) {
+                    $columns[] = "`$column`";
+                    if($conf->isDate($value))
+                        $value = $conf->dateToDb($value);
+                    $value = $mysqli->real_escape_string($value);
+                    $values[] = "'$value'";
+                }
+            }
+            $columns = implode(',',$columns);
+            $values = implode(',',$values);
+            $query_project = "INSERT INTO `project` ($columns) VALUES ($values);";
+        }
+        if(isset($_POST['evaluates']) && is_array($_POST['evaluates'])) {
+            $_POST['evaluates']['project_id'] = $project_id;
+            $columns = [];
+            $values = [];
+            foreach($_POST['evaluates'] as $column => $value) {
+                $column = $mysqli->real_escape_string($column);
+                if(in_array($column, ['project_id','researcher_id','rating','eval_date'])) {
+                    $columns[] = "`$column`";
+                    if($conf->isDate($value))
+                        $value = $conf->dateToDb($value);
+                    $value = $mysqli->real_escape_string($value);
+                    $values[] = "'$value'";
+                }
+            }
+            $columns = implode(',',$columns);
+            $values = implode(',',$values);
+            $query_evaluates = "INSERT INTO `evaluates` ($columns) VALUES ($values);";
+        }
 	}
-	else if($action == 'update' && isset($_POST['edit_id'], $_POST['organization']) && $_POST['edit_id'] && is_array($_POST['organization'])) {
-		$abbreviation = $mysqli->real_escape_string($_POST['edit_id']);
-		$fields = [];
-		foreach($_POST['organization'] as $column => $value) {
-			$column = $mysqli->real_escape_string($column);
-			if(in_array($column, ['abbreviation','name','type','budget','street','street_number','postal_code','city'])) {
-                if($conf->isDate($value))
-                    $value = $conf->dateToDb($value);
-				$value = $mysqli->real_escape_string($value);
-				$fields[] = "`$column` = '$value'";
-			}
-		}
-		$fields = implode(',',$fields);
-		$query = "	UPDATE `organization`
-                    SET $fields
-                    WHERE `abbreviation` = '$abbreviation' ";
+    // UPDATE
+	else if($action == 'update' && isset($_POST['edit_id']) && $_POST['edit_id']) {
+        $project_id = $mysqli->real_escape_string($_POST['edit_id']);
+        if(isset($_POST['project']) && is_array($_POST['project'])) {
+            $fields = [];
+            foreach($_POST['project'] as $column => $value) {
+                $column = $mysqli->real_escape_string($column);
+                if(in_array($column, ['title','summary','amount','start_date','end_date','program_id','abbreviation','researcher_id','executive_id'])) {
+                    if($conf->isDate($value))
+                        $value = $conf->dateToDb($value);
+                    $value = $mysqli->real_escape_string($value);
+                    $fields[] = "`$column` = '$value'";
+                }
+            }
+            $fields = implode(',',$fields);
+            $query_project = "	UPDATE `project`
+                        SET $fields
+                        WHERE `project_id` = '$project_id' ";
+        }
+        if(isset($_POST['evaluates']) && is_array($_POST['evaluates'])) {
+            $fields = [];
+            foreach($_POST['evaluates'] as $column => $value) {
+                $column = $mysqli->real_escape_string($column);
+                if(in_array($column, ['researcher_id','rating','eval_date'])) {
+                    if($conf->isDate($value))
+                        $value = $conf->dateToDb($value);
+                    $value = $mysqli->real_escape_string($value);
+                    $fields[] = "`$column` = '$value'";
+                }
+            }
+            $fields = implode(',',$fields);
+            $query_evaluates = "	UPDATE `evaluates`
+                        SET $fields
+                        WHERE `project_id` = '$project_id' ";
+        }
 	}
 	else if($action == 'delete' && isset($_POST['edit_id']) && $_POST['edit_id']) {
-		$abbreviation = $mysqli->real_escape_string($_POST['edit_id']);
-		$fields = [];
-		$query = "	DELETE FROM `organization`
-					WHERE `abbreviation` = '$abbreviation' ";
+		$project_id = $mysqli->real_escape_string($_POST['edit_id']);
+		$query_project = "	DELETE FROM `project`
+					WHERE `project_id` = '$project_id' ";
+		$query_evaluates = "	DELETE FROM `evaluates`
+					WHERE `project_id` = '$project_id' ";
 	}
-    $condition = $mysqli->query($query);
+    $condition = $mysqli->query($query_project);
+    $condition = $condition && $mysqli->query($query_evaluates);
 
-    if(isset($_POST['organization__phone']) && in_array($_POST['db'], ['insert','update'])) {
-        $queryDeletePhone = "	DELETE FROM `organization__phone`
-                                WHERE `abbreviation` = '$abbreviation' ";
-        $condition = $condition && $mysqli->query($queryDeletePhone);
+    if(isset($_POST['FieldProject']['field_id']) && in_array($_POST['db'], ['insert','update'])) {
+        $queryDeletefieldProject = "	DELETE FROM `FieldProject`
+                                        WHERE `project_id` = '$project_id' ";
+        $condition = $condition && $mysqli->query($queryDeletefieldProject);
         $values = [];
-        foreach($_POST['organization__phone'] as $phone) {
+        foreach($_POST['FieldProject']['field_id'] as $value) {
             if($value) {
                 $value = $mysqli->real_escape_string($value);
-                $values[] = "('$phone', '$abbreviation')";
+                $values[] = "('$project_id', '$value')";
             }
         }
         $values = implode(',',$values);
-        $queryInsertPhone = "INSERT INTO `organization__phone` (`phone`,`abbreviation`) VALUES $values;";
-        $condition = $condition && $mysqli->query($queryInsertPhone);
+        $queryInsertfieldProject = "INSERT INTO `FieldProject` (`project_id`,`field_id`) VALUES $values;";
+        $condition = $condition && $mysqli->query($queryInsertfieldProject);
     }
-
-	//echo '###'.$query;exit;
+    if(isset($_POST['WorksOn']['researcher_id']) && in_array($_POST['db'], ['insert','update'])) {
+        $queryDeleteWorksOn = "	DELETE FROM `WorksOn`
+                                WHERE `project_id` = '$project_id' ";
+        $condition = $condition && $mysqli->query($queryDeleteWorksOn);
+        $values = [];
+        foreach($_POST['WorksOn']['researcher_id'] as $value) {
+            if($value) {
+                $value = $mysqli->real_escape_string($value);
+                $values[] = "('$project_id', '$value')";
+            }
+        }
+        $values = implode(',',$values);
+        $queryInsertWorksOn = "INSERT INTO `WorksOn` (`project_id`,`researcher_id`) VALUES $values;";
+        $condition = $condition && $mysqli->query($queryInsertWorksOn);
+    }
+    if(isset($_POST['deliverable']) && in_array($_POST['db'], ['insert','update'])) {
+        $queryDeleteDeliverable = "	DELETE FROM `deliverable`
+                                WHERE `project_id` = '$project_id' ";
+        $condition = $condition && $mysqli->query($queryDeleteDeliverable);
+        $values = [];
+        foreach($_POST['deliverable'] as $row) {
+            if(!empty($row)) {
+                $deliverable_id = $mysqli->real_escape_string($row['deliverable_id']);
+                $summary = $mysqli->real_escape_string($row['summary']);
+                $values[] = "('$deliverable_id', '$summary','$project_id')";
+            }
+        }
+        $values = implode(',',$values);
+        $queryInsertDeliverable = "INSERT INTO `deliverable` (`deliverable_id`,`summary`,`project_id`) VALUES $values;";
+        $condition = $condition && $mysqli->query($queryInsertDeliverable);
+    }
+    //echo '<br>###<br>'.$query_project.'<br>'.$query_evaluates.'<br>'.$queryDeletefieldProject.'<br>'.$queryInsertfieldProject.'<br>'.$queryDeleteWorksOn.'<br>'.$queryInsertWorksOn.'<br>'.$queryDeleteDeliverable.'<br>'.$queryInsertDeliverable.'<br>###<br>';exit;
 	if($condition && $mysqli->commit())
-		echo json_encode(['status'=>'success', 'action'=>$action, 'edit_id'=>$abbreviation ]);
+		echo json_encode(['status'=>'success', 'action'=>$action, 'edit_id'=>$project_id,'update_list'=>'filters' ]);
 	else {
         $mysqli->rollback();
 		echo json_encode(['status'=>'failure']);
@@ -524,7 +597,7 @@ function form($type, $data = NULL) {
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
-                <select class="selectpicker select-organization form-control" name="project[organization]" id="project_organization" title="Χωρίς επιλογή" required data-live-search="true" <?php echo $read_only[$type]??''; ?> >	<?php
+                <select class="selectpicker select-organization form-control" name="project[abbreviation]" id="project_organization" title="Χωρίς επιλογή" required data-live-search="true" <?php echo $read_only[$type]??''; ?> >	<?php
                     foreach($organization as $abbreviation => $name) {	?>
                         <option value="<?php echo $abbreviation; ?>" <?php echo isset($data['abbreviation']) && $data['abbreviation'] == $abbreviation ? 'selected' : '';?> >
                             <?php echo $name; ?>
@@ -535,7 +608,7 @@ function form($type, $data = NULL) {
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
-                <select class="selectpicker select-manager form-control" name="project[manager]" id="project-manager" title="Χωρίς επιλογή" required required data-live-search="true" <?php echo $read_only[$type]??''; ?> >	<?php
+                <select class="selectpicker select-manager form-control" name="project[researcher_id]" id="project-manager" title="Χωρίς επιλογή" required required data-live-search="true" <?php echo $read_only[$type]??''; ?> >	<?php
                     foreach($researcher as $id => $name) {	?>
                         <option value="<?php echo $id; ?>" <?php echo isset($data['manager_id']) && $data['manager_id'] == $id ? 'selected' : '';?> >
                             <?php echo $name; ?>
@@ -546,7 +619,7 @@ function form($type, $data = NULL) {
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
-                <select class="selectpicker select-executive form-control" name="project[executive]" id="project_executive" title="Χωρίς επιλογή" required required data-live-search="true" <?php echo $read_only[$type]??''; ?> >	<?php
+                <select class="selectpicker select-executive form-control" name="project[executive_id]" id="project_executive" title="Χωρίς επιλογή" required required data-live-search="true" <?php echo $read_only[$type]??''; ?> >	<?php
                     foreach($executive as $id => $name) {	?>
                         <option value="<?php echo $id; ?>" <?php echo isset($data['executive_id']) && $data['executive_id'] == $id ? 'selected' : '';?> >
                             <?php echo $name; ?>
@@ -557,7 +630,7 @@ function form($type, $data = NULL) {
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
-                <select class="selectpicker select-filed form-control" multiple name="project[field]" id="project_field" title="Χωρίς επιλογή" required <?php echo $read_only[$type]??''; ?> >	<?php
+                <select class="selectpicker select-filed form-control" multiple name="FieldProject[field_id][]" id="project_field" title="Χωρίς επιλογή" required <?php echo $read_only[$type]??''; ?> >	<?php
                     foreach($field as $id => $name) {	?>
                         <option value="<?php echo $id; ?>" <?php echo isset($data['field']) && in_array($id, explode(',',$data['field'])) ? 'selected' : '';?> >
                             <?php echo $name; ?>
@@ -568,7 +641,7 @@ function form($type, $data = NULL) {
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div>
             <div class="input-field" >
-                <select class="selectpicker select-researcher form-control" multiple data-live-search="true" name="project[researcher]" id="project_researcher" title="Χωρίς επιλογή" required <?php echo $read_only[$type]??''; ?> >	<?php
+                <select class="selectpicker select-researcher form-control" multiple data-live-search="true" name="WorksOn[researcher_id][]" id="project_researcher" title="Χωρίς επιλογή" required <?php echo $read_only[$type]??''; ?> >	<?php
                     foreach($researcher as $id => $name) {	?>
                         <option value="<?php echo $id; ?>" <?php echo in_array($id, $workson) ? 'selected' : '';?> >
                             <?php echo $name; ?>
@@ -592,20 +665,20 @@ function form($type, $data = NULL) {
                 <div class="d-flex flex-row mb-3">
                     <div class="btn-group btn-group-toggle program-rating my-0 me-4" data-toggle="buttons">
                         <label class="<?php echo 'btn radio-btn'.(@$data['rating']=='A'?' active':''); ?>" for="program_rating_a">
-                            <input <?php echo @$data['rating']=='A'?'checked':''; ?> type="radio" name="evaluates[rating]" id="program_rating_a" value="uni"> Α
+                            <input <?php echo @$data['rating']=='A'?'checked':''; ?> type="radio" name="evaluates[rating]" id="program_rating_a" value="A"> Α
                         </label>
                         <label class="<?php echo 'btn radio-btn'.(@$data['rating']=='B'?' active':''); ?>" for="program_rating_b">
-                            <input <?php echo @$data['rating']=='B'?'checked':''; ?> type="radio" name="evaluates[rating]" id="program_rating_b" value="co"> Β
+                            <input <?php echo @$data['rating']=='B'?'checked':''; ?> type="radio" name="evaluates[rating]" id="program_rating_b" value="B"> Β
                         </label>
                     </div>
                     <div class="input-field ps-0 w-100 my-0">
-                        <input type="text" id="project_start_date" class="form-control datepicker calendar" name="project[start_date]" required value="<?php echo $data['eval_date'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?>>
+                        <input type="text" id="project_start_date" class="form-control datepicker calendar" name="evaluates[eval_date]" required value="<?php echo $data['eval_date'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?>>
                         <label for="project_start_date" class="form-label">Ημερομηνία<span class="text-danger">&nbsp;*</span></label>
                         <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
                     </div>
                 </div>
                 <div class="input-field" >
-                    <select class="selectpicker select-evaluate form-control" name="project[evaluate]" id="project-evaluate" title="Χωρίς επιλογή" required required data-live-search="true" <?php echo $read_only[$type]??''; ?> >	<?php
+                    <select class="selectpicker select-evaluate form-control" name="evaluates[researcher_id]" id="project-evaluate" title="Χωρίς επιλογή" required required data-live-search="true" <?php echo $read_only[$type]??''; ?> >	<?php
                         foreach($evaluates as $id => $name) {	?>
                             <option value="<?php echo $id; ?>" <?php echo isset($data['evaluate_id']) && $data['evaluate_id'] == $id ? 'selected' : '';?> >
                                 <?php echo $name; ?>

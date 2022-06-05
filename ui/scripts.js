@@ -301,27 +301,32 @@ $(document).ready(function(){
 				if($(modarBtnObj).length && typeof JSON.parse($(modarBtnObj).attr('data-content')).parent !== 'undefined') {
 					edit_id = JSON.parse($(modarBtnObj).attr('data-content')).parent.id;
 				}
-				//UPDATE LIST AFTER INSERT, UPDATE, DELETE
-				if($.inArray(response.action, ['insert','update']) !== -1) {
-					var itemUpdate = $.ajax({
-						url: form.attr('action'),
-						type: 'POST',
-						data: $.param({list: form.data('item'), type: response.action, edit_id: edit_id}),
-						dataType: 'html',
-						async: false}).responseText;
-					//console.error(itemUpdate);
-					if(response.action === 'update')
-						$(modarBtnObj).closest('tr').replaceWith(itemUpdate);
-					else if(response.action === 'insert')	{
-						$(modarBtnObj).closest('table').find('tbody').append(itemUpdate);
-					}	
+				if(typeof response.update_list === 'undefined' || response.update_list !== 'filters') {
+					//UPDATE LIST AFTER INSERT, UPDATE, DELETE
+					if($.inArray(response.action, ['insert','update']) !== -1) {
+						var itemUpdate = $.ajax({
+							url: form.attr('action'),
+							type: 'POST',
+							data: $.param({list: form.data('item'), type: response.action, edit_id: edit_id}),
+							dataType: 'html',
+							async: false}).responseText;
+						//console.error(itemUpdate);
+						if(response.action === 'update')
+							$(modarBtnObj).closest('tr').replaceWith(itemUpdate);
+						else if(response.action === 'insert')	{
+							$(modarBtnObj).closest('table').find('tbody').append(itemUpdate);
+						}	
+					}
+					else if(response.action == 'delete') {
+						$(modarBtnObj).closest('tr').slideUp(); //.remove()
+					}
+					// UPDATE COUNT LIST
+					if(typeof $('span.count-list') !== 'undefined') {
+						$('span.count-list').text($tbody.children('tr').length);
+					}
 				}
-				else if(response.action == 'delete') {
-					$(modarBtnObj).closest('tr').slideUp(); //.remove()
-				}
-				// UPDATE COUNT LIST
-				if(typeof $('span.count-list') !== 'undefined') {
-					$('span.count-list').text($tbody.children('tr').length);
+				else if(typeof response.update_list !== 'undefined' && response.update_list === 'filters') {
+					postFilters($('.daterange-container.form-group'));
 				}
 			}
 			else 
