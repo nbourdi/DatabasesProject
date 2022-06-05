@@ -126,7 +126,7 @@ CREATE TABLE FieldProject (
     field_id INT UNSIGNED NOT NULL REFERENCES field (field_id),
     PRIMARY KEY (project_id, field_id),
     CONSTRAINT fk_fieldproj_project FOREIGN KEY (project_id)
-		REFERENCES project (project_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+		REFERENCES project (project_id) ON DELETE CASCADE ON UPDATE CASCADE,
 	CONSTRAINT fk_fieldproj_field FOREIGN KEY (field_id)
 		REFERENCES field (field_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
