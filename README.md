@@ -10,7 +10,7 @@ This is a project for the ECE NTUA Databases course, spring semester 2021-2022.
 
 ## Dependencies
 
-- [MySQL](https://www.mysql.com/)
+- [MySQL (MariaDB)](https://www.mysql.com/)
 - [Apache](https://httpd.apache.org/)
 - [PHP](https://www.php.net/)
 
