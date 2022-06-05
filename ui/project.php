@@ -10,9 +10,14 @@ if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'project' && in_ar
 	$data = [];
 	if(isset($_POST['edit_id']) && is_numeric($_POST['edit_id'])) {
 		$edit_id = $mysqli->real_escape_string($_POST['edit_id']);
-		$query = "	SELECT `project_id`,`title`, `summary`,`amount`,DATE_FORMAT(`start_date`,'%d/%m/%Y') `start_date`,DATE_FORMAT(`end_date`,'%d/%m/%Y') `end_date`,`executive_id`,`executive_name`,`abbreviation`,`organization`,`manager_id`,`manager`,`field`
-                    FROM `project_view`
-					WHERE `project_id` = '$edit_id' ";
+		$query = "	SELECT `p`.`project_id`,`p`.`title`,`p`.`summary`,`p`.`amount`, DATE_FORMAT(`p`.`start_date`,'%d/%m/%Y') `start_date`,DATE_FORMAT(`p`.`end_date`,'%d/%m/%Y') `end_date`,`p`.`executive_id`,`p`.`executive_name`,`p`.`abbreviation`, `p`.`organization`,`p`.`manager_id`,`p`.`manager`,`p`.`field`,
+                    `e`.rating,DATE_FORMAT(`e`.`eval_date`,'%d/%m/%Y')`eval_date`,`e`.`researcher_id` `evaluate_id`, CONCAT(`r`.`last_name`, ' ', `r`.`first_name`) `evaluate`
+                    FROM `project_view` `p`
+                    JOIN `evaluates` `e`
+                    ON `p`.`project_id` = `e`.`project_id`
+                    JOIN `researcher` `r`
+                    ON `e`.`researcher_id` = `r`.`researcher_id`
+					WHERE `p`.`project_id` = '$edit_id'; ";
 		//echo $query; exit;
 		$result = $mysqli->query($query);
 		if ($result->num_rows > 0) {
@@ -276,11 +281,11 @@ function dataList($data) {
                             </a>
                             <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open mb-4" title="<?php echo 'Επεξεργασία έργου'; ?>" 
                                 data-content='{"form":"project","type":"update","edit_id":"<?php echo $key; ?>"}' data-success="Η προσθήκη του έργου ολοκληρώθηκε."
-                                data-failure="Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά." class="">
+                                data-failure="Η προσθήκη απέτυχε, παρακαλώ δοκιμάστε ξανά." data-modal-size="lg">
                                 <?php echo $icon->edit; ?>
                             </a>
                             <a href="<?php echo $_SERVER['REQUEST_URI']; ?>" class="modal-open" title="<?php echo 'Διαγραφή έργου'; ?>" 
-                                data-content='{"form":"project","type":"delete","edit_id":"<?php echo $key; ?>"}'>
+                                data-content='{"form":"project","type":"delete","edit_id":"<?php echo $key; ?>"}' data-modal-size="lg">
                                 <?php echo $icon->delete; ?>
                             </a>
                         <div>
@@ -308,7 +313,8 @@ function form($type, $data = NULL) {
 
     $project_id = $data['project_id'];
     $organization = [];
-    $query = "SELECT `abbreviation`,`name` FROM `organization` ";
+    $query = "  SELECT `abbreviation`,`name` 
+                FROM `organization` ";
     $result = $mysqli->query($query);
     if ($result->num_rows > 0) {
         // output data of each row
@@ -339,7 +345,8 @@ function form($type, $data = NULL) {
         }
     }
     $field = [];
-    $query = "SELECT `field_id`,`field_name` FROM `field` ";
+    $query = "  SELECT `field_id`,`field_name` 
+                FROM `field` ";
     $result = $mysqli->query($query);
     if ($result->num_rows > 0) {
         // output data of each row
@@ -348,7 +355,9 @@ function form($type, $data = NULL) {
         }
     }
     $workson = [];
-    $query = "SELECT `researcher_id` FROM `WorksOn` WHERE `project_id` = $project_id ";
+    $query = "  SELECT `researcher_id` 
+                FROM `WorksOn` 
+                WHERE `project_id` = $project_id ";
     $result = $mysqli->query($query);
     if ($result->num_rows > 0) {
         // output data of each row
@@ -357,12 +366,27 @@ function form($type, $data = NULL) {
         }
     }
     $deliverable = [];
-    $query = "SELECT `project_id`, `deliverable_id` `title`, `summary` FROM `deliverable` WHERE `project_id` = $project_id ";
+    $query = "  SELECT `project_id`, `deliverable_id` `title`, `summary`
+                FROM `deliverable`
+                WHERE `project_id` = $project_id ";
     $result = $mysqli->query($query);
     if ($result->num_rows > 0) {
         // output data of each row
         while($row = $result->fetch_assoc()) {
             $deliverable[] = $row;
+        }
+    }
+    $evaluates = [];
+    $query = "  SELECT `r`.`researcher_id`,CONCAT(`last_name`, ' ', `first_name`) `name`
+                FROM `researcher` `r`
+                WHERE `abbreviation` != (SELECT `abbreviation`
+                    FROM `project` WHERE `project_id` = $project_id
+                ); ";
+    $result = $mysqli->query($query);
+    if ($result->num_rows > 0) {
+        // output data of each row
+        while($row = $result->fetch_assoc()) {
+            $evaluates[$row['researcher_id']] = $row['name'];
         }
     } ?>
     <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" class="<?php echo $type; ?>" method="POST" data-item="project" data-type="<?php echo $type; ?>">
@@ -452,10 +476,41 @@ function form($type, $data = NULL) {
                     deliverableInput($type, $row );
                 }
             } ?>
-            <a href="javascript:void(0)" class="btn btn-light add-deliverable" title="<?php echo 'Προσθήκη παραδοτέου (id: '.($project_id??'').')'; ?>" 
+            <a href="javascript:void(0)" class="btn btn-light add-deliverable mb-3" title="<?php echo 'Προσθήκη παραδοτέου (id: '.($project_id??'').')'; ?>" 
                 data-project="deliverable" data-id="<?php echo $project_id??''; ?>" >
                 Προσθήκη παραδοτέου
-            </a> <?php
+            </a>
+            <div class="deliverable-group border mb-3 px-4 py-2">
+                <h6>Αξιολόγηση</h6>
+                <div class="d-flex flex-row mb-3">
+                    <div class="btn-group btn-group-toggle program-rating my-0 me-4" data-toggle="buttons">
+                        <label class="<?php echo 'btn radio-btn'.(@$data['rating']=='A'?' active':''); ?>" for="program_rating_a">
+                            <input <?php echo @$data['rating']=='A'?'checked':''; ?> type="radio" name="evaluates[rating]" id="program_rating_a" value="uni"> Α
+                        </label>
+                        <label class="<?php echo 'btn radio-btn'.(@$data['rating']=='B'?' active':''); ?>" for="program_rating_b">
+                            <input <?php echo @$data['rating']=='B'?'checked':''; ?> type="radio" name="evaluates[rating]" id="program_rating_b" value="co"> Β
+                        </label>
+                    </div>
+                    <div class="input-field ps-0 w-100 my-0">
+                        <input type="text" id="project_start_date" class="form-control datepicker calendar" name="project[start_date]" required value="<?php echo $data['eval_date'] ?? ''; ?>" <?php echo $read_only[$type]??''; ?>>
+                        <label for="project_start_date" class="form-label">Ημερομηνία<span class="text-danger">&nbsp;*</span></label>
+                        <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+                    </div>
+                </div>
+                <div class="input-field" >
+                    <select class="selectpicker select-evaluate form-control" name="project[evaluate]" id="project-evaluate" title="Χωρίς επιλογή" required required data-live-search="true" <?php echo $read_only[$type]??''; ?> >	<?php
+                        foreach($evaluates as $id => $name) {	?>
+                            <option value="<?php echo $id; ?>" <?php echo isset($data['evaluate_id']) && $data['evaluate_id'] == $id ? 'selected' : '';?> >
+                                <?php echo $name; ?>
+                            </option>	<?php
+                        }	?>
+                    </select>
+                    <label for="project-evaluate" class="form-label">Αξιολογητής<span class="text-danger">&nbsp;*</span></label>
+                    <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
+                </div>
+            </div>
+            
+            <?php
 
             if(isset($message[$type])) { ?>
                 <p>	<?php

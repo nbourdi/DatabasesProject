@@ -352,7 +352,6 @@ function form($type, $data = NULL, $phone=NULL) {
                 <label for="organization_city" class="form-label">Πόλη<span class="text-danger">&nbsp;*</span></label>
                 <span class="error is-required">Το πεδίο είναι υποχρεωτικό</span>
             </div> <?php
-            $phone = [];
             if(!empty($phone)) {
                 foreach ($phone as $value) {
                     phoneInput($type, @$data['abbreviation'], $value );
@@ -360,7 +359,7 @@ function form($type, $data = NULL, $phone=NULL) {
             } ?>
             <a href="javascript:void(0)" class="btn btn-light add-phone" title="<?php echo 'Προσθήκη τηλεφώνου (id: '.(@$data['abbreviation']??'').')'; ?>" 
                 data-organization="phone" data-abbreviation="<?php echo @$data['abbreviation']??''; ?>" >
-                Προσθήκη παραδοτέου
+                Προσθήκη τηλεφώνου
             </a> <?php
             if(isset($message[$type])) { ?>
                 <p>	<?php
