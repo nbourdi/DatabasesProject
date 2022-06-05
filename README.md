@@ -26,7 +26,7 @@ The above can be installed and configured either individually or as a stack.
 
 4. Set up the database with all initial mock data inserted.
 
-    Click the "Shell" button on the Control Panel and execute quick-set-up.
+    Click the "Shell" button on the Control Panel and execute quick-set-up.sql.
     
     
   ```
