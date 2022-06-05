@@ -119,6 +119,7 @@ if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) 
                         WHERE `project_id` = '$project_id' ";
         }
 	}
+    // DELETE
 	else if($action == 'delete' && isset($_POST['edit_id']) && $_POST['edit_id']) {
 		$project_id = $mysqli->real_escape_string($_POST['edit_id']);
 		$query_project = "	DELETE FROM `project`
@@ -129,6 +130,7 @@ if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) 
     $condition = $mysqli->query($query_project);
     $condition = $condition && $mysqli->query($query_evaluates);
 
+    // FieldProject
     if(in_array($_POST['db'], ['insert','update'])) {
         $queryDeletefieldProject = "	DELETE FROM `FieldProject`
                                         WHERE `project_id` = '$project_id' ";
@@ -146,6 +148,8 @@ if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) 
             $condition = $condition && $mysqli->query($queryInsertfieldProject);
         }
     }
+
+    // WorksOn
     if(in_array($_POST['db'], ['insert','update'])) {
         $queryDeleteWorksOn = "	DELETE FROM `WorksOn`
                                 WHERE `project_id` = '$project_id' ";
@@ -163,6 +167,8 @@ if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) 
             $condition = $condition && $mysqli->query($queryInsertWorksOn);
         }
     }
+
+    //deliverable
     if(in_array($_POST['db'], ['insert','update'])) {
         $queryDeleteDeliverable = "	DELETE FROM `deliverable`
                                 WHERE `project_id` = '$project_id' ";
@@ -309,7 +315,7 @@ if ($result->num_rows > 0) {
 
 ?>
     <div class="container mt-5">
-        <h1>Έργα - Επιχορηγήσεις</h1>
+        <h1>Έργα - Επιχορηγήσεις (3.1 ερώτημα)</h1>
         <p>Έργα (Επιχορηγήσεις) με τα σχετικά δεδομένα τους (τίτλος, περίληψη, ποσό
             χρηματοδότησης/επιχορήγησης, ημερομηνία έναρξης και λήξης, διάρκεια σε χρόνια καθώς και
             τους ερευνητές που εργάζονται για το έργο). Κάθε έργο έχει έναν οργανισμό που το διαχειρίζεται,
@@ -432,7 +438,7 @@ function dataList($data) {
                 <tr>
                     <td><?php echo $row['title']; ?></td>
                     <td><?php echo $row['amount']; ?></td>
-                    <td><?php echo $row['start_date'].' '.$row['end_date'].' '.$row['duration'].' χρόν'.($row['duration'] == 1?'ος':'ια'); ?></td>
+                    <td><?php echo $row['start_date'].'<br>'.$row['end_date'].'<br>'.$row['duration'].' χρόν'.($row['duration'] == 1?'ος':'ια'); ?></td>
                     <td>
                         <?php echo 'Οργανισμός:<br>'.$row['organization'].'<br>Yπεύθυνος:<br>'.$row['manager'].'<br>Στέλεχος:<br>'.$row['executive_name'].'<br>Ερευνητές: '.$researchers; ?>
                     </td>
