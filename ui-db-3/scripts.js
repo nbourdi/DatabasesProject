@@ -75,13 +75,15 @@ $('input.daterange').each(function() {
 	$(this).daterangepicker({
 		opens: 'right',
 		autoApply: false,
-		autoUpdateInput: true,
+		autoUpdateInput: false,
 		locale: {
 		  cancelLabel: 'Ακύρωση',
 		  applyLabel: 'Εφαρμογή'
 		},
-	    applyButtonClasses: 'btn apply',
-	    cancelClass: 'btn cancel'
+		applyButtonClasses: 'btn apply',
+		cancelClass: 'btn cancel',
+		"minDate": $(this).data('start-date'),
+		"maxDate": $(this).data('end-date')
 	}, function(start, end, label) {
 	  console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
 	});
@@ -491,7 +493,7 @@ $(document).ready(function(){
 			type = form.data('type'),
 			orgType = object.val();
 			form.find('.organization-budget').each(function() {
-				$(this).parent().slideUp();
+				$(this).parent().remove();
 			});
 			var input = $.ajax({
 				url: form.attr('action'),
