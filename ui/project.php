@@ -37,7 +37,7 @@ if(isset($_POST['project'], $_POST['id']) && $_POST['project'] == 'deliverable')
 // INSERT OR UPDATE OR DELETE TO DB
 if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) {
     
-	//echo '<pre>';print_r($_POST);echo '</pre>';//exit;
+	//echo '<pre>';print_r($_POST);echo '</pre>';exit;
 	$action = $mysqli->real_escape_string($_POST['db']);
 	$query_project = "";
 	$query_evaluates = "";
@@ -129,51 +129,57 @@ if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) 
     $condition = $mysqli->query($query_project);
     $condition = $condition && $mysqli->query($query_evaluates);
 
-    if(isset($_POST['FieldProject']['field_id']) && in_array($_POST['db'], ['insert','update'])) {
+    if(in_array($_POST['db'], ['insert','update'])) {
         $queryDeletefieldProject = "	DELETE FROM `FieldProject`
                                         WHERE `project_id` = '$project_id' ";
         $condition = $condition && $mysqli->query($queryDeletefieldProject);
-        $values = [];
-        foreach($_POST['FieldProject']['field_id'] as $value) {
-            if($value) {
-                $value = $mysqli->real_escape_string($value);
-                $values[] = "('$project_id', '$value')";
+        if(isset($_POST['FieldProject']['field_id'])) {
+            $values = [];
+            foreach($_POST['FieldProject']['field_id'] as $value) {
+                if($value) {
+                    $value = $mysqli->real_escape_string($value);
+                    $values[] = "('$project_id', '$value')";
+                }
             }
+            $values = implode(',',$values);
+            $queryInsertfieldProject = "INSERT INTO `FieldProject` (`project_id`,`field_id`) VALUES $values;";
+            $condition = $condition && $mysqli->query($queryInsertfieldProject);
         }
-        $values = implode(',',$values);
-        $queryInsertfieldProject = "INSERT INTO `FieldProject` (`project_id`,`field_id`) VALUES $values;";
-        $condition = $condition && $mysqli->query($queryInsertfieldProject);
     }
-    if(isset($_POST['WorksOn']['researcher_id']) && in_array($_POST['db'], ['insert','update'])) {
+    if(in_array($_POST['db'], ['insert','update'])) {
         $queryDeleteWorksOn = "	DELETE FROM `WorksOn`
                                 WHERE `project_id` = '$project_id' ";
         $condition = $condition && $mysqli->query($queryDeleteWorksOn);
-        $values = [];
-        foreach($_POST['WorksOn']['researcher_id'] as $value) {
-            if($value) {
-                $value = $mysqli->real_escape_string($value);
-                $values[] = "('$project_id', '$value')";
+        if(isset($_POST['WorksOn']['researcher_id'])) {
+            $values = [];
+            foreach($_POST['WorksOn']['researcher_id'] as $value) {
+                if($value) {
+                    $value = $mysqli->real_escape_string($value);
+                    $values[] = "('$project_id', '$value')";
+                }
             }
+            $values = implode(',',$values);
+            $queryInsertWorksOn = "INSERT INTO `WorksOn` (`project_id`,`researcher_id`) VALUES $values;";
+            $condition = $condition && $mysqli->query($queryInsertWorksOn);
         }
-        $values = implode(',',$values);
-        $queryInsertWorksOn = "INSERT INTO `WorksOn` (`project_id`,`researcher_id`) VALUES $values;";
-        $condition = $condition && $mysqli->query($queryInsertWorksOn);
     }
-    if(isset($_POST['deliverable']) && in_array($_POST['db'], ['insert','update'])) {
+    if(in_array($_POST['db'], ['insert','update'])) {
         $queryDeleteDeliverable = "	DELETE FROM `deliverable`
                                 WHERE `project_id` = '$project_id' ";
         $condition = $condition && $mysqli->query($queryDeleteDeliverable);
-        $values = [];
-        foreach($_POST['deliverable'] as $row) {
-            if(!empty($row)) {
-                $deliverable_id = $mysqli->real_escape_string($row['deliverable_id']);
-                $summary = $mysqli->real_escape_string($row['summary']);
-                $values[] = "('$deliverable_id', '$summary','$project_id')";
+        if(isset($_POST['deliverable'])) {
+            $values = [];
+            foreach($_POST['deliverable'] as $row) {
+                if(!empty($row)) {
+                    $deliverable_id = $mysqli->real_escape_string($row['deliverable_id']);
+                    $summary = $mysqli->real_escape_string($row['summary']);
+                    $values[] = "('$deliverable_id', '$summary','$project_id')";
+                }
             }
+            $values = implode(',',$values);
+            $queryInsertDeliverable = "INSERT INTO `deliverable` (`deliverable_id`,`summary`,`project_id`) VALUES $values;";
+            $condition = $condition && $mysqli->query($queryInsertDeliverable);
         }
-        $values = implode(',',$values);
-        $queryInsertDeliverable = "INSERT INTO `deliverable` (`deliverable_id`,`summary`,`project_id`) VALUES $values;";
-        $condition = $condition && $mysqli->query($queryInsertDeliverable);
     }
     //echo '<br>###<br>'.$query_project.'<br>'.$query_evaluates.'<br>'.$queryDeletefieldProject.'<br>'.$queryInsertfieldProject.'<br>'.$queryDeleteWorksOn.'<br>'.$queryInsertWorksOn.'<br>'.$queryDeleteDeliverable.'<br>'.$queryInsertDeliverable.'<br>###<br>';exit;
 	if($condition && $mysqli->commit())

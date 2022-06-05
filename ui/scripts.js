@@ -525,7 +525,7 @@ $(document).ready(function(){
 		$('body').on('click', '.remove-phone[data-organization=phone]', function(e){
 			e.preventDefault();
 			var object = $(this);
-			object.closest('.input-field.input-group').slideUp();
+			object.closest('.input-field.input-group').remove();
 		});
 
 	});
@@ -553,6 +553,6 @@ $(document).ready(function(){
 		$('body').on('click', '.remove-deliverable[data-project=deliverable]', function(e){
 			e.preventDefault();
 			var object = $(this);
-			object.closest('.deliverable-group').slideUp();
+			object.closest('.deliverable-group').remove();
 		});
 	});

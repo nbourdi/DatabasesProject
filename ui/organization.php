@@ -138,20 +138,22 @@ if(isset($_POST['db']) && in_array($_POST['db'], ['insert','update','delete'])) 
 	}
     $condition = $mysqli->query($query);
 
-    if(isset($_POST['organization__phone']) && in_array($_POST['db'], ['insert','update'])) {
+    if(in_array($_POST['db'], ['insert','update'])) {
         $queryDeletePhone = "	DELETE FROM `organization__phone`
                                 WHERE `abbreviation` = '$abbreviation' ";
         $condition = $condition && $mysqli->query($queryDeletePhone);
-        $values = [];
-        foreach($_POST['organization__phone'] as $phone) {
-            if($value) {
-                $value = $mysqli->real_escape_string($value);
-                $values[] = "('$phone', '$abbreviation')";
+        if(isset($_POST['organization__phone'])) {
+            $values = [];
+            foreach($_POST['organization__phone'] as $phone) {
+                if($value) {
+                    $value = $mysqli->real_escape_string($value);
+                    $values[] = "('$phone', '$abbreviation')";
+                }
             }
+            $values = implode(',',$values);
+            $queryInsertPhone = "INSERT INTO `organization__phone` (`phone`,`abbreviation`) VALUES $values;";
+            $condition = $condition && $mysqli->query($queryInsertPhone);
         }
-        $values = implode(',',$values);
-        $queryInsertPhone = "INSERT INTO `organization__phone` (`phone`,`abbreviation`) VALUES $values;";
-        $condition = $condition && $mysqli->query($queryInsertPhone);
     }
 
 	//echo '###'.$query;exit;

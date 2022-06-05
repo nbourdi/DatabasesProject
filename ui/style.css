@@ -17,6 +17,8 @@ label.btn {box-shadow:none!important;}
     background-color: #3f3f3f;
     border-color: #3f3f3f;
 }
+form.delete .btn.remove-deliverable,
+form.delete .btn.remove-phone,
 svg {pointer-events: none;}
 
 
