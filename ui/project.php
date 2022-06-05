@@ -11,12 +11,10 @@ if(isset($_POST['form'], $_POST['type']) && $_POST['form'] == 'project' && in_ar
 	if(isset($_POST['edit_id']) && is_numeric($_POST['edit_id'])) {
 		$edit_id = $mysqli->real_escape_string($_POST['edit_id']);
 		$query = "	SELECT `p`.`project_id`,`p`.`title`,`p`.`summary`,`p`.`amount`, DATE_FORMAT(`p`.`start_date`,'%d/%m/%Y') `start_date`,DATE_FORMAT(`p`.`end_date`,'%d/%m/%Y') `end_date`,`p`.`executive_id`,`p`.`executive_name`,`p`.`abbreviation`, `p`.`organization`,`p`.`manager_id`,`p`.`manager`,`p`.`field`,
-                    `e`.rating,DATE_FORMAT(`e`.`eval_date`,'%d/%m/%Y')`eval_date`,`e`.`researcher_id` `evaluate_id`, CONCAT(`r`.`last_name`, ' ', `r`.`first_name`) `evaluate`
+                    `e`.rating,DATE_FORMAT(`e`.`eval_date`,'%d/%m/%Y')`eval_date`,`e`.`researcher_id` `evaluate_id`
                     FROM `project_view` `p`
-                    JOIN `evaluates` `e`
+                    JOIN `eval_view` `e`
                     ON `p`.`project_id` = `e`.`project_id`
-                    JOIN `researcher` `r`
-                    ON `e`.`researcher_id` = `r`.`researcher_id`
 					WHERE `p`.`project_id` = '$edit_id'; ";
 		//echo $query; exit;
 		$result = $mysqli->query($query);
@@ -39,13 +37,16 @@ if(isset($_POST['project'], $_POST['id']) && $_POST['project'] == 'deliverable')
 if(isset($_POST['previw'], $_POST['edit_id']) && $_POST['previw'] == 'project' && is_numeric($_POST['edit_id'])) {
     $edit_id = $mysqli->real_escape_string($_POST['edit_id']);
     $project = [];
-    $query = "	SELECT  `p`.`project_id`,  `p`.`title`,  `p`.`summary`, GROUP_CONCAT(DISTINCT `f`.`field_name`) `field`
+    $query = "	SELECT  `p`.`project_id`,  `p`.`title`,  `p`.`summary`, GROUP_CONCAT(DISTINCT `f`.`field_name`) `field`,
+                `e`.rating,DATE_FORMAT(`e`.`eval_date`,'%d/%m/%Y')`eval_date`,`e`.`eval_name`
                 FROM `project` `p`
                 NATURAL JOIN `FieldProject` `fp`
                 JOIN `field` `f`
                 ON `fp`.`field_id` = `f`.`field_id`
+                JOIN `eval_view` `e`
+                ON `p`.`project_id` = `e`.`project_id`
                 WHERE  `p`.`project_id` = $edit_id
-                GROUP BY `p`.`project_id`;; ";
+                GROUP BY `p`.`project_id`; ";
     $result = $mysqli->query($query);
     if ($result->num_rows > 0) {
         $project = $result->fetch_assoc();
@@ -552,6 +553,11 @@ function deliverableInput($type, $row = NULL) {
 function preview($project,$deliverable) {
     //echo '<pre>'; print_r($project);print_r($deliverable);echo'</pre>'; ?>
     <div class="container">
+        <div class="w-100 d-flex justify-content-end">
+            <span class="badge bg-warning text-dark">
+                <?php echo 'Βαθμός: '.$project['rating'].' '.$project['eval_date'].' Αξιολογιτής: '.$project['eval_name']; ?>
+            </span>
+        </div>
         <h4><?php echo $project['title']; ?></h4>
         <div class="mb-2"> <?php
             foreach (explode(',',$project['field']) as $field) { ?>
