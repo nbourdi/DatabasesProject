@@ -22,24 +22,19 @@ The above can be installed and configured either individually or as a stack.
 
 2. Run the XAMPP Control Panel with administrative priviledges and start the Apache and MySQL services.
 
-3. Click on the "Explorer" button and navigate to `\xampp\mysql\bin`. Copy [quick-set-up.sql](https://github.com/nbourdi/DatabasesProject/blob/main/quick-set-up.sql) to the directory.
+3. Navigate to `\xampp\mysql\bin`. Copy [quick-set-up.sql](https://github.com/nbourdi/DatabasesProject/blob/main/quick-set-up.sql) to the directory.
 
 4. Set up the database with all initial mock data inserted.
 
     Click the "Shell" button on the Control Panel and execute quick-set-up.sql.
     
-    
   ```
- cd mysql\bin
- mysql -u <user> -p
- CREATE DATABASE elidek;
- exit
- mysql -u <user> -p elidek < quick-set-up.sql
+        mysql -u <user> -p elidek < quick-set-up.sql
  ```
   
 5. Clone the repository to `\xampp\htdocs`.
  ```
- git clone https://github.com/nbourdi/DatabasesProject
+       git clone https://github.com/nbourdi/DatabasesProject
  ```
 
 6. Edit /ui-db-3/connection.ini to match your credentials.
